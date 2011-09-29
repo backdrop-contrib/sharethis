@@ -37,7 +37,7 @@ function sharethis_admin() {
   // First, setup variables we will need.
   // Get the path variables setup.
   $my_path = drupal_get_path('module', 'sharethis');
-  $current_options_array = get_options_array();
+  $current_options_array = sharethis_get_options_array();
   global $base_url;
   // Load the css and js for our module's configuration.
   drupal_add_css($my_path . '/ShareThisForm.css');
@@ -57,7 +57,7 @@ function sharethis_form($form, &$form_state) {
   // First, setup variables we will need.
   // Get the path variables setup.
   $my_path = drupal_get_path('module', 'sharethis');
-  $current_options_array = get_options_array();
+  $current_options_array = sharethis_get_options_array();
   global $base_url;
   
   // Create the variables related to widget choice.
@@ -275,7 +275,7 @@ function sharethis_node_view($node, $view_mode, $langcode) {
     return;
   }
   // First get all of the options for the sharethis widget from the database:
-  $data_options = get_options_array();
+  $data_options = sharethis_get_options_array();
   
   // This looks to see if the path variable has been posted by some rewrite module.
   // This is not super efficient, O(N), but N is often less than 20.
@@ -314,19 +314,19 @@ function sharethis_node_view($node, $view_mode, $langcode) {
       // You can change the weight to change whether the buttons are near the top or bottom of the node.
       // Default is at the bottom:
       $node->content['my_additional_field'] = array(
-        '#markup' => get_button_HTML($data_options, $mPath, $mTitle), 
-        '#weight' => 10
+        '#markup' => sharethis_get_button_HTML($data_options, $mPath, $mTitle),
+        '#weight' => 10,
       );
     }
   }
 }
 
  /**
- * getOptionArray is a helper function for DB access.
+ * sharethisGetOptionArray is a helper function for DB access.
  *
  * Returns options that have been stored in the database.
  */
-function get_options_array() {
+function sharethis_get_options_array() {
   $data_options = array();
   $sql = "SELECT st.st_option, st.st_value FROM {st_table} st";
   $result = db_query($sql);
@@ -337,10 +337,10 @@ function get_options_array() {
 }
 
  /**
-  * get_button_HTML is the function that creates the ShareThis code
+  * sharethisGet_button_HTML is the function that creates the ShareThis code
   * It returns the appropriate html based on your settings.
   */
-function get_button_HTML($data_options, $mPath, $mTitle) {
+function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
   $type = substr($data_options['buttons'], 4);
   $type = $type == "_" ? "" : $type;
