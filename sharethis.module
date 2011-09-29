@@ -17,13 +17,18 @@
 function sharethis_help($path, $arg) {
   global $base_url;
   switch ($path) {
+    case 'admin/config/services/sharethis':
+      return '<p>' . t('Choose the widget, button family, and services for using <a href="@sharethis">ShareThis</a> to share content online.', array('@sharethis' => 'http://sharethis.com')) . '</p>';
+      break;
     case "admin/help#sharethis":
       $return_value = "<p>" . t("This plugin places the ShareThis widget on each node.") . '</p>';
       $return_value .= "<p>" . t("You can also enable the included block module, to place it anywhere on your page.  The main differences are:") . '</p>';
       $return_value .= "<ul><li>" . t("The Block pulls the URL from the current page and current Drupal title, the node version pulls it from the node title and url.") . '</li>';
       $return_value .= "<li>" . t("The block can be placed anywhere on a page, the node is limited to where nodes normally go") . '</li>';
       $return_value .= "<li>" . t("The block module is more likely to be compatible with other plugins that use blocks rather than nodes. (Panels works nicely with the block)") . '</li></ul>';
-      return $return_value . "<p>" . t('For various configuration options please got to') . ' <a href="' . $base_url . '/admin/config/sharethis">The Settings Page</a></p><p>' . t('For more information, please visit') . ' <a href="http://help.sharethis.com/integration/drupal">help.sharethis.com</a></p><br />';
+      $return_value .= "<p>" . t('For various configuration options please got to <a href="@sharethis">the settings page</a>.', array('@sharethis' => url('admin/config/services/sharethis'))) . '</p>';
+      $return_value .= '<p>' . t('For more information, please visit <a href="@help">help.sharethis.com</a>.', array('@help' => 'http://help.sharethis.com/integration/drupal')) . '</p>';
+      return $return_value;
       break;
   }
 } 
@@ -95,7 +100,7 @@ function sharethis_form($form, &$form_state) {
   $form = array();
   $form['options'] = array(
     '#type' => 'fieldset',
-    '#title' => t('ShareThis Configuration Settings:')
+    '#title' => t('Display'),
   );
   $form['options']['widget_option'] = array(
     '#options' => array(
@@ -124,11 +129,6 @@ function sharethis_form($form, &$form_state) {
     '#prefix' => '<div class="st_widgetContain"><div class="st_spriteCover"><img id="stb_sprite" class="st_buttonSelectSprite ' . $button_choice . '" src="' . $base_url . '/' . $my_path . '/img/preview_sprite.png"></img></div><div class="st_widgetPic"><img class="st_buttonSelectImage" src="' . $base_url . '/' . $my_path . '/img/preview_bg.png"></img></div>',
     '#suffix' => '</div>'
   );
-  $form['options']['teaser_option'] = array(
-    '#title' => t("Don't show the buttons in teaser view."),
-    '#type' => 'checkbox',
-    '#default_value' => $teaser ? 1 : 0,
-  );
   $form['options']['service_option'] = array(
     '#description' => t("<b>Add</b> a service by selecting it on the right and clicking the <i>left arrow</i>.  <b>Remove</b> it by clicking the <i>right arrow</i>.<br /><b>Change the order</b> of services under \"Selected Services\" by using the <i>up</i> and <i>down</i> arrows."),
     '#required' => TRUE,
@@ -138,14 +138,30 @@ function sharethis_form($form, &$form_state) {
     '#title' => t("Choose Your Services."),
     '#default_value' => t($service_string)
   );
-  $form['options']['node_option'] = array(
-    '#title' => t("Choose the node types you want to show the buttons on."),
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+  );
+  $form['context'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Context'),
+    '#group' => 'additional_settings',
+    '#description' => t('Configure where the ShareThis widget should appear.'),
+  );
+  $form['context']['node_option'] = array(
+    '#title' => t("Node types"),
+    '#description' => t('Select which nodes the ShareThis widget should appear on.'),
     '#required' => TRUE,
     '#type' => 'checkboxes',
     '#options' => $node_type_options,
     '#default_value' => $nodes_selected
   );
-  $form['options']['sharethis_weight'] = array(
+  $form['context']['teaser_option'] = array(
+    '#title' => t('Only full view'),
+    '#type' => 'checkbox',
+    '#default_value' => $teaser ? 1 : 0,
+    '#description' => t('When checked, will not show the widget on node teasers.'),
+  );
+  $form['context']['sharethis_weight'] = array(
     '#title' => t('Weight'),
     '#description' => t('The weight of the widget determines the location on the page where it will appear.'),
     '#required' => FALSE,
@@ -153,13 +169,19 @@ function sharethis_form($form, &$form_state) {
     '#options' => drupal_map_assoc(array(-100, -50, -25, -10, 0, 10, 25, 50, 100)),
     '#default_value' => variable_get('sharethis_weight', 10),
   );
-  $form['options']['publisherID'] = array(
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced'),
+    '#group' => 'additional_settings',
+    '#description' => t('The advanced settings can usually be ignored if you have no need for them.'),
+  );
+  $form['advanced']['publisherID'] = array(
     '#title' => t("Insert a publisher key (optional)."),
     '#description' => t("When you install the module, we create a random publisher key.  You can register the key with ShareThis by contacting customer support.  Otherwise, you can go to <a href='http://www.sharethis.com/account'>ShareThis</a> and create an account.<br />Your official publisher key can be found under 'My Account'.<br />It allows you to get detailed analytics about sharing done on your site."),
     '#type' => 'textfield',
     '#default_value' => $publisher
   );
-  $form['options']['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit', 
     '#value' => t('Submit')
   );
@@ -244,7 +266,7 @@ function sharethis_form_submit($form, &$form_state) {
     variable_set('sharethis_weight', $form_state['input']['sharethis_weight']);
   }
  
-  drupal_set_message(t("Thank you! Your preferences have been saved."));
+  drupal_set_message(t('The configuration options have been saved.'));
 }
  
  /**
@@ -253,9 +275,9 @@ function sharethis_form_submit($form, &$form_state) {
  * This is the ShareThis Config Menu.
  */
 function sharethis_menu() {
-  $items['admin/config/sharethis'] = array(
-    'title' => 'ShareThis Settings',
-    'description' => 'Choose widget, button family, and services!',
+  $items['admin/config/services/sharethis'] = array(
+    'title' => 'ShareThis',
+    'description' => 'Choose the widget, button family, and services for using ShareThis to share content online.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('sharethis_admin'),
     'access arguments' => array('access administration pages')
