@@ -338,7 +338,7 @@ function sharethis_get_options_array() {
     'buttons' => variable_get('sharethis_button_option', 'stbc_large'),
     'nodeType' => variable_get('sharethis_node_option', 'page,article'),
     'publisherID' => variable_get('sharethis_publisherID', ''),
-    'services' => variable_get('sharethis_service_option', 'Tweet:twitter","Facebook:facebook","ShareThis:sharethis'),
+    'services' => variable_get('sharethis_service_option', '"Tweet:twitter","Facebook:facebook","ShareThis:sharethis"'),
     'viewMode' => variable_get('sharethis_teaser_option', 0),
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
   );
