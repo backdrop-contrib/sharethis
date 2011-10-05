@@ -31,9 +31,9 @@ function sharethis_help($path, $arg) {
       return $return_value;
       break;
   }
-} 
+}
 
- /**
+/**
  * Implements hook_admin.
  *
  * ShareThis Config Menu.
@@ -42,8 +42,6 @@ function sharethis_admin() {
   // First, setup variables we will need.
   // Get the path variables setup.
   $my_path = drupal_get_path('module', 'sharethis');
-  $current_options_array = sharethis_get_options_array();
-  global $base_url;
   // Load the css and js for our module's configuration.
   drupal_add_css($my_path . '/ShareThisForm.css');
   drupal_add_js('https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js', 'external'); // @TODO: Do we really need to load jQuery twice?
@@ -194,63 +192,41 @@ function sharethis_form($form, &$form_state) {
 function sharethis_form_submit($form, &$form_state) {
   // Record the widget option.
   if (isset($form_state['input']['widget_option'])) {
-    $record = (object) NULL;
-    $record->st_option = "widget";
-    $record->st_value = $form_state['input']['widget_option']; 
-    drupal_write_record('st_table', $record, 'st_option');
+    variable_set('sharethis_widget_option', $form_state['input']['widget_option']);
   }
-  
+
   // Record the buttons option.
   if (isset($form_state['input']['button_option'])) {
-    $record = (object) NULL;
-    $record->st_option = "buttons";
-    $record->st_value = $form_state['input']['button_option']; 
-    drupal_write_record('st_table', $record, 'st_option'); 
+    variable_set('sharethis_button_option', $form_state['input']['button_option']);
   }
+
   // Record the services option.
   if (isset($form_state['input']['service_option'])) {
-    $record = (object) NULL;
-    $record->st_option = "services";
     $sanitized = $form_state['input']['service_option'];
     $sanitized = str_replace(";", "", $sanitized);
     $sanitized = str_replace("\\", "", $sanitized);
     $sanitized = str_replace("/", "", $sanitized);
     $sanitized = str_replace("(", "", $sanitized);
     $sanitized = str_replace(")", "", $sanitized);
-    $record->st_value = $sanitized; 
-    drupal_write_record('st_table', $record, 'st_option');
+    variable_set('sharethis_service_option', $sanitized);
   }
-  
+
   // Record the NodeType option.
   if (isset($form_state['input']['node_option'])) {
-    $record = (object) NULL;
-    $record->st_option = "nodeType";
-    $node_string = "";
-    foreach ($form_state['input']['node_option'] as $k => $v) {
-      $node_string .= $v . ",";
-    }
-    $record->st_value = substr($node_string, 0, -1); 
-    drupal_write_record('st_table', $record, 'st_option');
+    $types = implode(',', $form_state['input']['node_option']);
+    variable_set('sharethis_node_option', $types);
   }  
   
   // Record the teaser option.
   if (isset($form_state['input']['teaser_option'])) {
-    $record = (object) NULL;
-    $record->st_option = "viewMode";
-    $record->st_value = $form_state['input']['teaser_option']; 
-    drupal_write_record('st_table', $record, 'st_option');
+    variable_set('sharethis_teaser_option', $form_state['input']['teaser_option']);
   } 
   else {
-    $record = (object) NULL;
-    $record->st_option = "viewMode";
-    $record->st_value = "0"; 
-    drupal_write_record('st_table', $record, 'st_option');
+    variable_set('sharethis_teaser_option', 0);
   }
-  
+
   // Record the publisher ID option.  Since it's a text field, remove anything that resembles code
   if (isset($form_state['input']['publisherID'])) {
-    $record = (object) NULL;
-    $record->st_option = "publisherID";
     $sanitized = $form_state['input']['publisherID'];
     $sanitized = str_replace(";", "", $sanitized);
     $sanitized = str_replace(":", "", $sanitized);
@@ -258,14 +234,14 @@ function sharethis_form_submit($form, &$form_state) {
     $sanitized = str_replace("/", "", $sanitized);
     $sanitized = str_replace("(", "", $sanitized);
     $sanitized = str_replace(")", "", $sanitized);
-    $record->st_value = $sanitized; 
-    drupal_write_record('st_table', $record, 'st_option');
+    variable_set('sharethis_publisherID', $sanitized);
   }
 
+  // The weight of the widget.
   if (isset($form_state['input']['sharethis_weight'])) {
     variable_set('sharethis_weight', $form_state['input']['sharethis_weight']);
   }
- 
+
   drupal_set_message(t('The configuration options have been saved.'));
 }
  
@@ -350,25 +326,28 @@ function sharethis_node_view($node, $view_mode, $langcode) {
   }
 }
 
- /**
+/**
  * sharethisGetOptionArray is a helper function for DB access.
  *
  * Returns options that have been stored in the database.
+ *
+ * @TODO: Switch from this function to just straight variable_get() calls.
  */
 function sharethis_get_options_array() {
-  $data_options = array();
-  $sql = "SELECT st.st_option, st.st_value FROM {st_table} st";
-  $result = db_query($sql);
-  foreach ($result as $record) {
-    $data_options[$record->st_option] = $record->st_value;
-  }
-  return $data_options;
+  return array(
+    'buttons' => variable_get('sharethis_button_option', 'stbc_large'),
+    'nodeType' => variable_get('sharethis_node_option', 'page,article'),
+    'publisherID' => variable_get('sharethis_publisherID', ''),
+    'services' => variable_get('sharethis_service_option', 'Tweet:twitter","Facebook:facebook","ShareThis:sharethis'),
+    'viewMode' => variable_get('sharethis_teaser_option', 0),
+    'widget' => variable_get('sharethis_widget_option', 'st_multi'),
+  );
 }
 
- /**
-  * sharethisGet_button_HTML is the function that creates the ShareThis code
-  * It returns the appropriate html based on your settings.
-  */
+/**
+ * sharethisGet_button_HTML is the function that creates the ShareThis code
+ * It returns the appropriate html based on your settings.
+ */
 function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
   $type = substr($data_options['buttons'], 4);
