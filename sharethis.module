@@ -22,7 +22,6 @@ function sharethis_help($path, $arg) {
       break;
     case "admin/help#sharethis":
       $return_value = "<p>" . t("This plugin places the ShareThis widget on each node.") . '</p>';
-      $return_value .= "<p>" . t("You can also enable the included block module, to place it anywhere on your page.  The main differences are:") . '</p>';
       $return_value .= "<ul><li>" . t("The Block pulls the URL from the current page and current Drupal title, the node version pulls it from the node title and url.") . '</li>';
       $return_value .= "<li>" . t("The block can be placed anywhere on a page, the node is limited to where nodes normally go") . '</li>';
       $return_value .= "<li>" . t("The block module is more likely to be compatible with other plugins that use blocks rather than nodes. (Panels works nicely with the block)") . '</li></ul>';
@@ -159,6 +158,17 @@ function sharethis_form($form, &$form_state) {
     '#default_value' => $teaser ? 1 : 0,
     '#description' => t('When checked, will not show the widget on node teasers.'),
   );
+  $form['context']['sharethis_location'] = array(
+    '#title' => t('Location'),
+    '#type' => 'radios',
+    '#options' => array(
+      'content' => t('Node content'),
+      'block' => t('Block'),
+      'links' => t('Links area'),
+    ),
+    '#default_value' => variable_get('sharethis_location', 'content'),
+    '#description' => t('Select where the ShareThis widget should appear.'),
+  );
   $form['context']['sharethis_weight'] = array(
     '#title' => t('Weight'),
     '#description' => t('The weight of the widget determines the location on the page where it will appear.'),
@@ -235,6 +245,11 @@ function sharethis_form_submit($form, &$form_state) {
     $sanitized = str_replace("(", "", $sanitized);
     $sanitized = str_replace(")", "", $sanitized);
     variable_set('sharethis_publisherID', $sanitized);
+  }
+
+  // The location of the widget.
+  if (isset($form_state['input']['sharethis_location'])) {
+    variable_set('sharethis_location', $form_state['input']['sharethis_location']);
   }
 
   // The weight of the widget.
@@ -315,13 +330,35 @@ function sharethis_node_view($node, $view_mode, $langcode) {
       // Do nothing.
     } 
     else {
-      // This puts the buttons on the node and adds the necessary scripts.
-      // You can change the weight to change whether the buttons are near the top or bottom of the node.
-      // Default is at the bottom:
-      $node->content['sharethis'] = array(
-        '#markup' => sharethis_get_button_HTML($data_options, $mPath, $mTitle),
-        '#weight' => intval(variable_get('sharethis_weight', 10)),
-      );
+      // Check where we want to display the ShareThis widget.
+      switch (variable_get('sharethis_location', 'content')) {
+        case 'content':
+          $node->content['sharethis'] = array(
+            '#tag' => 'div', // Wrap it in a div.
+            '#type' => 'html_tag',
+            '#attributes' => array('class' => 'sharethis-buttons'),
+            '#value' => sharethis_get_button_HTML($data_options, $mPath, $mTitle),
+            '#weight' => intval(variable_get('sharethis_weight', 10)),
+          );
+        break;
+        case 'links':
+          $links['sharethis'] = array(
+            'html' => TRUE,
+            'title' => sharethis_get_button_HTML($data_options, $mPath, $mTitle),
+            'attributes' => array('class' => 'sharethis-buttons'),
+          );
+          $node->content['links']['sharethis'] = array(
+            '#theme' => 'links',
+            '#links' => $links,
+            '#attributes' => array(
+              'class' => array('links', 'inline'),
+            ),
+            '#tag' => 'div', // Wrap it in a div.
+            '#type' => 'html_tag',
+            '#weight' => intval(variable_get('sharethis_weight', 10)),
+          );
+        break;
+      }
     }
   }
 }
@@ -373,3 +410,40 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   return $st_spans . $st_js;
 }
 
+/**
+ * Implements hook_block_info().
+ */
+function sharethis_block_info() {
+  $blocks['sharethis_block'] = array(
+    'info' => t('ShareThis'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements of hook_block_view().
+ */
+function sharethis_block_view($delta='') {
+  $block = array();
+  switch ($delta) {
+    case 'sharethis_block':
+      $block['content'] = sharethis_block_contents();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * custom html block
+ * @return string
+ */
+function sharethis_block_contents() {
+  if (variable_get('sharethis_location', 'content') == 'block') {
+    // First get all of the options for the sharethis widget from the database:
+    $data_options = sharethis_get_options_array();
+    $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+    $mPath = url($_GET['q'], array('absolute' => TRUE));
+    $mTitle = drupal_get_title();
+    return sharethis_get_button_HTML($data_options, $mPath, $mTitle);
+  }
+}
