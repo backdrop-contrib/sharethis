@@ -135,6 +135,16 @@ function sharethis_form($form, &$form_state) {
     '#title' => t("Choose Your Services."),
     '#default_value' => t($service_string)
   );
+  $form['options']['sharethis_option_extras'] = array(
+    '#title' => t('Extra services'),
+    '#description' => t('Select additional services which will be available. These are not officially supported by ShareThis, but are available.'),
+    '#type' => 'checkboxes',
+    '#options' => array(
+      'Google Plus One:plusone' => t('Google Plus One'),
+      'Facebook Like:fblike' => t('Facebook Like'),
+    ),
+    '#default_value' => variable_get('sharethis_option_extras', array()),
+  );
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
   );
@@ -211,15 +221,17 @@ function sharethis_form_submit($form, &$form_state) {
   }
 
   // Record the services option.
-  if (isset($form_state['input']['service_option'])) {
-    $sanitized = $form_state['input']['service_option'];
-    $sanitized = str_replace(";", "", $sanitized);
-    $sanitized = str_replace("\\", "", $sanitized);
-    $sanitized = str_replace("/", "", $sanitized);
-    $sanitized = str_replace("(", "", $sanitized);
-    $sanitized = str_replace(")", "", $sanitized);
-    variable_set('sharethis_service_option', $sanitized);
-  }
+  $services = isset($form_state['input']['service_option']) ? $form_state['input']['service_option'] : '';
+  $services = str_replace(";", "", $services);
+  $services = str_replace("\\", "", $services);
+  $services = str_replace("/", "", $services);
+  $services = str_replace("(", "", $services);
+  $services = str_replace(")", "", $services);
+  variable_set('sharethis_service_option', $services);
+
+  // Save the extra services.
+  $extras = isset($form_state['input']['sharethis_option_extras']) ? $form_state['input']['sharethis_option_extras'] : array();
+  variable_set('sharethis_option_extras', $extras);
 
   // Record the NodeType option.
   if (isset($form_state['input']['node_option'])) {
@@ -376,6 +388,7 @@ function sharethis_get_options_array() {
     'nodeType' => variable_get('sharethis_node_option', 'page,article'),
     'publisherID' => variable_get('sharethis_publisherID', ''),
     'services' => variable_get('sharethis_service_option', '"Tweet:twitter","Facebook:facebook","ShareThis:sharethis"'),
+    'option_extras' => variable_get('sharethis_option_extras', array()),
     'viewMode' => variable_get('sharethis_teaser_option', 0),
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
   );
@@ -386,6 +399,11 @@ function sharethis_get_options_array() {
  * It returns the appropriate html based on your settings.
  */
 function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
+  // Inject the extra services.
+  foreach ($data_options['option_extras'] as $service) {
+    $data_options['services'] .= ',"' . $service . '"';
+  }
+
   // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
   $type = substr($data_options['buttons'], 4);
   $type = $type == "_" ? "" : $type;
