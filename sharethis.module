@@ -441,9 +441,18 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   // If switchTo5x is set to false, then the "classic" widget will be selected.
   $is_five = $data_options['widget'] == 'st_multi' ? 'true' : 'false';
   $publisher_id = $data_options['publisherID'];
-  $st_js = "<script type='text/javascript'>var switchTo5x=$is_five;</script>
-    <script type='text/javascript' src='http://w.sharethis.com/button/buttons.js'></script>
-    <script type='text/javascript'>stLight.options({publisher:'$publisher_id'});</script>";
+  $st_js = "<script type='text/javascript'>var switchTo5x=$is_five;</script>";
+
+  // Check if we're using SSL or not.
+  if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+    $st_js .= "<script type='text/javascript' src='https://ws.sharethis.com/button/buttons.js'></script>";
+  }
+  else {
+    $st_js .= "<script type='text/javascript' src='http://w.sharethis.com/button/buttons.js'></script>";
+  }
+
+  // Provide the publisher ID.
+  $st_js .= "<script type='text/javascript'>stLight.options({publisher:'$publisher_id'});</script>";
   return $st_spans . $st_js;
 }
 
