@@ -199,6 +199,12 @@ function sharethis_form($form, &$form_state) {
     '#type' => 'textfield',
     '#default_value' => $publisher
   );
+  $form['advanced']['sharethis_twitter_suffix'] = array(
+    '#title' => t("Twitter Suffix"),
+    '#description' => t("Optionally append a Twitter handle, or text, so that you get pinged when someone shares an article. Example: <em>via @YourNameHere</em>"),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('sharethis_twitter_handle', ''),
+  );
   $form['submit'] = array(
     '#type' => 'submit', 
     '#value' => t('Submit')
@@ -268,6 +274,9 @@ function sharethis_form_submit($form, &$form_state) {
   if (isset($form_state['input']['sharethis_weight'])) {
     variable_set('sharethis_weight', $form_state['input']['sharethis_weight']);
   }
+
+  $sharethis_twitter_suffix = isset($form_state['input']['sharethis_twitter_suffix']) ? $form_state['input']['sharethis_twitter_suffix'] : '';
+  variable_set('sharethis_twitter_suffix', $sharethis_twitter_suffix);
 
   drupal_set_message(t('The configuration options have been saved.'));
 }
@@ -391,6 +400,7 @@ function sharethis_get_options_array() {
     'option_extras' => variable_get('sharethis_option_extras', array()),
     'viewMode' => variable_get('sharethis_teaser_option', 0),
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
+    'twitter_suffix' => variable_get('sharethis_twitter_suffix', ''),
   );
 }
 
@@ -416,7 +426,16 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
     $display = "displaytext=";
     $display .= $service[0] . "\"";
     $display = ($type == "") ? "" : $display;
-    $st_spans .= "<span st_url=$mPath st_title='$mTitle' class='st_$serviceCodeName$type' $display></span>";
+
+    // Switch the title on a per-service basis if required.
+    $title = $mTitle;
+    switch ($serviceCodeName) {
+      case 'twitter':
+        $title = empty($data_options['twitter_suffix']) ? $mTitle : $mTitle . ' ' . $data_options['twitter_suffix'];
+        break;
+    }
+
+    $st_spans .= "<span st_url=$mPath st_title='$title' class='st_$serviceCodeName$type' $display></span>";
   }
   // These are the ShareThis scripts:
   // If switchTo5x is set to false, then the "classic" widget will be selected.
