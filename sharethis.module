@@ -177,7 +177,7 @@ function sharethis_form($form, &$form_state) {
       'links' => t('Links area'),
     ),
     '#default_value' => variable_get('sharethis_location', 'content'),
-    '#description' => t('Select where the ShareThis widget should appear.'),
+    '#description' => t('Select where the ShareThis widget should appear. When selected to display as a block, you must choose which region to display the <em>ShareThis block</em> in from the <a href="@blocksadmin">Blocks administration</a>.', array('@blocksadmin' => url('admin/structure/block'))),
   );
   $form['context']['sharethis_weight'] = array(
     '#title' => t('Weight'),
@@ -491,5 +491,18 @@ function sharethis_block_contents() {
     $mPath = url($_GET['q'], array('absolute' => TRUE));
     $mTitle = drupal_get_title();
     return sharethis_get_button_HTML($data_options, $mPath, $mTitle);
+  }
+}
+
+/**
+ * Implements hook_contextual_links_view_alter().
+ */
+function sharethis_contextual_links_view_alter(&$element, $items) {
+  // Add the configuration link for the ShareThis settings on the block itself.
+  if(isset($element['#element']['#block']->module) && $element['#element']['#block']->module == 'sharethis' && $element['#element']['#block']->delta == 'sharethis_block' && user_access('access administration pages')) {
+    $element['#links']['sharethis-configure'] = array(
+      'title' => t('Configure ShareThis'),
+      'href' => 'admin/config/services/sharethis',
+    );
   }
 }
