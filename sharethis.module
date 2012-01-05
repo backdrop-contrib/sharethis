@@ -33,6 +33,18 @@ function sharethis_help($path, $arg) {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function sharethis_permission() {
+  return array(
+    'administer sharethis' => array(
+      'title' => t('Administer ShareThis'), 
+      'description' => t('Change the settings for how ShareThis behaves on the site.'),
+    ),
+  );
+}
+
+/**
  * Implements hook_admin.
  *
  * ShareThis Config Menu.
@@ -292,7 +304,7 @@ function sharethis_menu() {
     'description' => 'Choose the widget, button family, and services for using ShareThis to share content online.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('sharethis_admin'),
-    'access arguments' => array('access administration pages')
+    'access arguments' => array('administer sharethis')
   );
   return $items;
 }
