@@ -435,9 +435,7 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
     // Strip the quotes from the element in the array (They are there for javascript)
     $service = explode(":", $service_array[$i]);
     $serviceCodeName = substr($service[1], 0, -1);
-    $display = "displaytext=";
-    $display .= $service[0] . "\"";
-    $display = ($type == "") ? "" : $display;
+    $display = substr($service[0], 1);
 
     // Switch the title on a per-service basis if required.
     $title = $mTitle;
@@ -447,8 +445,26 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
         break;
     }
 
-    $st_spans .= "<span st_url=$mPath st_title='$title' class='st_$serviceCodeName$type' $display></span>";
+    // Put together the span attributes.
+    $attributes = array(
+      'st_url' => $mPath,
+      'st_title' => $title,
+      'class' => 'st_' . $serviceCodeName . $type,
+    );
+    // Only show the display text if the type is set.
+    if (!empty($type)) {
+      $attributes['displaytext'] = $display;
+    }
+    // Render the span tag.
+    $st_spans .= theme('html_tag', array(
+      'element' => array(
+        '#tag' => 'span',
+        '#attributes' => $attributes,
+        '#value' => '', // It's an empty span tag.
+      ),
+    ));
   }
+
   // These are the ShareThis scripts:
   // If switchTo5x is set to false, then the "classic" widget will be selected.
   $is_five = $data_options['widget'] == 'st_multi' ? 'true' : 'false';
