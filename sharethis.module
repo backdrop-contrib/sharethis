@@ -81,7 +81,7 @@ function sharethis_form($form, &$form_state) {
     $widget_markup = "st_multi";
   }
   // Create the variables related to button choice.
-  $button_choice = $current_options_array['buttons'];
+  $button_choice = check_plain($current_options_array['buttons']);
   // Create the variables related to services chosen.
   $service_string = $current_options_array['services'];
   $service_string_markup = "";
@@ -224,22 +224,22 @@ function sharethis_form($form, &$form_state) {
   return $form; 
 }
 
- /**
+/**
  * This is the submit function for sharethis_form
  */
 function sharethis_form_submit($form, &$form_state) {
   // Record the widget option.
-  if (isset($form_state['input']['widget_option'])) {
-    variable_set('sharethis_widget_option', $form_state['input']['widget_option']);
+  if (isset($form_state['values']['widget_option'])) {
+    variable_set('sharethis_widget_option', $form_state['values']['widget_option']);
   }
 
   // Record the buttons option.
-  if (isset($form_state['input']['button_option'])) {
-    variable_set('sharethis_button_option', $form_state['input']['button_option']);
+  if (isset($form_state['values']['button_option'])) {
+    variable_set('sharethis_button_option', $form_state['values']['button_option']);
   }
 
   // Record the services option.
-  $services = isset($form_state['input']['service_option']) ? $form_state['input']['service_option'] : '';
+  $services = isset($form_state['values']['service_option']) ? $form_state['values']['service_option'] : '';
   $services = str_replace(";", "", $services);
   $services = str_replace("\\", "", $services);
   $services = str_replace("/", "", $services);
@@ -248,26 +248,26 @@ function sharethis_form_submit($form, &$form_state) {
   variable_set('sharethis_service_option', $services);
 
   // Save the extra services.
-  $extras = isset($form_state['input']['sharethis_option_extras']) ? $form_state['input']['sharethis_option_extras'] : array();
+  $extras = isset($form_state['values']['sharethis_option_extras']) ? $form_state['values']['sharethis_option_extras'] : array();
   variable_set('sharethis_option_extras', $extras);
 
   // Record the NodeType option.
-  if (isset($form_state['input']['node_option'])) {
-    $types = implode(',', $form_state['input']['node_option']);
+  if (isset($form_state['values']['node_option'])) {
+    $types = implode(',', $form_state['values']['node_option']);
     variable_set('sharethis_node_option', $types);
   }  
   
   // Record the teaser option.
-  if (isset($form_state['input']['teaser_option'])) {
-    variable_set('sharethis_teaser_option', $form_state['input']['teaser_option']);
+  if (isset($form_state['values']['teaser_option'])) {
+    variable_set('sharethis_teaser_option', $form_state['values']['teaser_option']);
   } 
   else {
     variable_set('sharethis_teaser_option', 0);
   }
 
   // Record the publisher ID option.  Since it's a text field, remove anything that resembles code
-  if (isset($form_state['input']['publisherID'])) {
-    $sanitized = $form_state['input']['publisherID'];
+  if (isset($form_state['values']['publisherID'])) {
+    $sanitized = $form_state['values']['publisherID'];
     $sanitized = str_replace(";", "", $sanitized);
     $sanitized = str_replace(":", "", $sanitized);
     $sanitized = str_replace("\\", "", $sanitized);
@@ -278,16 +278,16 @@ function sharethis_form_submit($form, &$form_state) {
   }
 
   // The location of the widget.
-  if (isset($form_state['input']['sharethis_location'])) {
-    variable_set('sharethis_location', $form_state['input']['sharethis_location']);
+  if (isset($form_state['values']['sharethis_location'])) {
+    variable_set('sharethis_location', $form_state['values']['sharethis_location']);
   }
 
   // The weight of the widget.
-  if (isset($form_state['input']['sharethis_weight'])) {
-    variable_set('sharethis_weight', $form_state['input']['sharethis_weight']);
+  if (isset($form_state['values']['sharethis_weight'])) {
+    variable_set('sharethis_weight', $form_state['values']['sharethis_weight']);
   }
 
-  $sharethis_twitter_suffix = isset($form_state['input']['sharethis_twitter_suffix']) ? $form_state['input']['sharethis_twitter_suffix'] : '';
+  $sharethis_twitter_suffix = isset($form_state['values']['sharethis_twitter_suffix']) ? $form_state['values']['sharethis_twitter_suffix'] : '';
   variable_set('sharethis_twitter_suffix', $sharethis_twitter_suffix);
 
   drupal_set_message(t('The configuration options have been saved.'));
@@ -428,32 +428,42 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
 
   // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
   $type = substr($data_options['buttons'], 4);
-  $type = $type == "_" ? "" : $type;
+  $type = $type == "_" ? "" : check_plain($type);
   $service_array = explode(",", $data_options['services']);
   $st_spans = "";
-  for ($i=0; $i<sizeof($service_array); $i++) {
+  foreach ($service_array as $service_full) {
     // Strip the quotes from the element in the array (They are there for javascript)
-    $service = explode(":", $service_array[$i]);
+    $service = explode(":", $service_full);
+
+    // Service names are expected to be parsed by Name:machine_name. If only one
+    // element in the array is given, it's an invalid service.
+    if (count($service) < 2) {
+      continue;
+    }
+
+    // Find the service code name.
     $serviceCodeName = substr($service[1], 0, -1);
-    $display = substr($service[0], 1);
 
     // Switch the title on a per-service basis if required.
     $title = $mTitle;
     switch ($serviceCodeName) {
       case 'twitter':
-        $title = empty($data_options['twitter_suffix']) ? $mTitle : $mTitle . ' ' . $data_options['twitter_suffix'];
+        $title = empty($data_options['twitter_suffix']) ? $mTitle : check_plain($mTitle) . ' ' . check_plain($data_options['twitter_suffix']);
         break;
     }
+
+    // Sanitize the service code for display.
+    $display = check_plain($serviceCodeName);
 
     // Put together the span attributes.
     $attributes = array(
       'st_url' => $mPath,
       'st_title' => $title,
-      'class' => 'st_' . $serviceCodeName . $type,
+      'class' => 'st_' . $display . $type,
     );
     // Only show the display text if the type is set.
     if (!empty($type)) {
-      $attributes['displaytext'] = $display;
+      $attributes['displaytext'] = check_plain($display);
     }
     // Render the span tag.
     $st_spans .= theme('html_tag', array(
