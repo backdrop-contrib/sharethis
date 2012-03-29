@@ -491,7 +491,7 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
 
   // Provide the publisher ID.
   $st_js .= "<script type='text/javascript'>stLight.options({publisher:'$publisher_id'});</script>";
-  return $st_spans . $st_js;
+  return '<div class="sharethis-wrapper">' . $st_spans . $st_js . '</div>';
 }
 
 /**
