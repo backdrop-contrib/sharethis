@@ -286,8 +286,7 @@ function sharethis_node_view($node, $view_mode, $langcode) {
 
   // Pathauto integration !
   if (module_exists('pathauto')) {
-    $path_module ='/';
-    $path_module .= drupal_lookup_path('alias',"node/".$node->nid);
+    $path_module = '/' . drupal_lookup_path('alias',"node/" . $node->nid);
   }
 
   global $base_url;
@@ -475,7 +474,7 @@ function sharethis_block_contents() {
  */
 function sharethis_contextual_links_view_alter(&$element, $items) {
   // Add the configuration link for the ShareThis settings on the block itself.
-  if(isset($element['#element']['#block']->module) && $element['#element']['#block']->module == 'sharethis' && $element['#element']['#block']->delta == 'sharethis_block' && user_access('access administration pages')) {
+  if (isset($element['#element']['#block']->module) && $element['#element']['#block']->module == 'sharethis' && $element['#element']['#block']->delta == 'sharethis_block' && user_access('access administration pages')) {
     $element['#links']['sharethis-configure'] = array(
       'title' => t('Configure ShareThis'),
       'href' => 'admin/config/services/sharethis',
