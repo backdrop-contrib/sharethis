@@ -481,3 +481,13 @@ function sharethis_contextual_links_view_alter(&$element, $items) {
     );
   }
 }
+
+/**
+ * Implementation of hook_views_api().
+ */
+function sharethis_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'sharethis') . '/views',
+  );
+}
