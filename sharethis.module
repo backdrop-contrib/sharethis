@@ -131,7 +131,8 @@ function sharethis_configuration_form($form, &$form_state) {
     '#prefix' => '<div>',
     '#suffix' => '</div><div id="myPicker"></div><script type="text/javascript">stlib_picker.setupPicker(jQuery("#myPicker"), [' . $service_string_markup . '], drupal_st.serviceCallback);</script>',
     '#title' => t("Choose Your Services."),
-    '#default_value' => t($service_string)
+    '#default_value' => t($service_string),
+    '#maxlength' => 1024,
   );
   $form['options']['sharethis_option_extras'] = array(
     '#title' => t('Extra services'),
