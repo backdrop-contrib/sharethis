@@ -166,6 +166,13 @@ function sharethis_configuration_form($form, &$form_state) {
     '#default_value' => $teaser ? 1 : 0,
     '#description' => t('When checked, will not show the widget on node teasers.'),
   );
+  $form['context']['sharethis_comments'] = array(
+    '#title' => t('Comments'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('sharethis_comments', FALSE),
+    '#description' => t('Display ShareThis on comments.'),
+    '#access' => module_exists('comment'),
+  );
   $form['context']['sharethis_location'] = array(
     '#title' => t('Location'),
     '#type' => 'radios',
@@ -469,6 +476,29 @@ function sharethis_block_contents() {
     $mPath = url($_GET['q'], array('absolute' => TRUE));
     $mTitle = drupal_get_title();
     return sharethis_get_button_HTML($data_options, $mPath, $mTitle);
+  }
+}
+
+/**
+ * Implements hook_comment_view.
+ */
+function sharethis_comment_view($comment, $view_mode, $langcode) {
+  if (variable_get('sharethis_comments', FALSE)) {
+    $data_options = sharethis_get_options_array();
+    $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+    $mPath = url($_GET['q'], array(
+      'absolute' => TRUE,
+      'fragment' => 'comment-' . $comment->cid,
+    ));
+    $mTitle = drupal_get_title();
+    $html = sharethis_get_button_HTML($data_options, $mPath, $mTitle);
+    $comment->content['sharethis'] = array(
+      '#type' => 'html_tag',
+      '#value' => $html,
+      '#tag' => 'div',
+      '#attributes' => array('class' => 'sharethis-comment'),
+      '#weight' => intval(variable_get('sharethis_weight', 10)),
+    );
   }
 }
 
