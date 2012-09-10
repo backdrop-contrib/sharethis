@@ -205,6 +205,12 @@ function sharethis_configuration_form($form, &$form_state) {
     '#type' => 'textfield',
     '#default_value' => $publisher
   );
+  $form['advanced']['sharethis_late_load'] = array(
+    '#title' => t('Late Load'),
+    '#description' => t("You can change the order in which ShareThis widget loads on the user's browser. By default the ShareThis widget loader loads as soon as the browser encounters the JavaScript tag; typically in the tag of your page. ShareThis assets are generally loaded from a CDN closest to the user. However, if you wish to change the default setting so that the widget loads after your web-page has completed loading then you simply tick this option."),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('sharethis_late_load', FALSE),
+  );
   $form['advanced']['sharethis_twitter_suffix'] = array(
     '#title' => t("Twitter Suffix"),
     '#description' => t("Optionally append a Twitter handle, or text, so that you get pinged when someone shares an article. Example: <em>via @YourNameHere</em>"),
@@ -371,6 +377,7 @@ function sharethis_get_options_array() {
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
     'twitter_suffix' => variable_get('sharethis_twitter_suffix', ''),
     'twitter_handle' => variable_get('sharethis_twitter_handle', ''),
+    'late_load' => variable_get('sharethis_late_load', FALSE),
   );
 }
 
@@ -439,10 +446,15 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   }
 
   // These are the ShareThis scripts:
-  // If switchTo5x is set to false, then the "classic" widget will be selected.
-  $is_five = $data_options['widget'] == 'st_multi' ? 'true' : 'false';
-  $publisher_id = $data_options['publisherID'];
-  $st_js = "<script type='text/javascript'>var switchTo5x=$is_five;</script>";
+  $st_js_options['switchTo5x'] = $data_options['widget'] == 'st_multi' ? TRUE : FALSE;
+  if ($data_options['late_load']) {
+    $st_js_options['__st_loadLate'] = TRUE;
+  }
+  $st_js = "<script type='text/javascript'>";
+  foreach ($st_js_options as $name => $value) {
+    $st_js .= 'var ' . $name . ' = ' . drupal_json_encode($value) . ';';
+  }
+  $st_js .= '</script>';
 
   // Check if we're using SSL or not.
   if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
@@ -453,7 +465,10 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   }
 
   // Provide the publisher ID.
-  $st_js .= "<script type='text/javascript'>stLight.options({publisher:'$publisher_id'});</script>";
+  $stlight = drupal_json_encode(array(
+    'publisher' => $data_options['publisherID'],
+  ));
+  $st_js .= "<script type='text/javascript'>stLight.options($stlight);</script>";
   return '<div class="sharethis-wrapper">' . $st_spans . $st_js . '</div>';
 }
 
