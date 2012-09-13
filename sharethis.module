@@ -53,7 +53,7 @@ function sharethis_configuration_form($form, &$form_state) {
   $my_path = drupal_get_path('module', 'sharethis');
   // Load the css and js for our module's configuration.
   drupal_add_css($my_path . '/ShareThisForm.css');
-  drupal_add_js('http://w.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
+  drupal_add_js('https://ws.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
   drupal_add_js($my_path . '/ShareThisForm.js');
   drupal_add_js($my_path . '/stlib_picker.js');
   drupal_add_css($my_path . '/stlib_picker.css');
