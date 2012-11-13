@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function sharethis_views_data() {
   $data = array();
