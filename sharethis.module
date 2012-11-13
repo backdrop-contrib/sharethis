@@ -230,6 +230,12 @@ function sharethis_configuration_form($form, &$form_state) {
     '#type' => 'textfield',
     '#default_value' => variable_get('sharethis_twitter_recommends', ''),
   );
+  $form['advanced']['sharethis_option_onhover'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display ShareThis widget on hover'),
+    '#description' => t('If disabled, the ShareThis widget will be displayed on click instead of hover.'),
+    '#default_value' => variable_get('sharethis_option_onhover', TRUE),
+  );
   return system_settings_form($form);
 }
 
@@ -385,6 +391,7 @@ function sharethis_get_options_array() {
     'option_extras' => variable_get('sharethis_option_extras', array()),
     'viewMode' => variable_get('sharethis_teaser_option', 0),
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
+    'onhover' => variable_get('sharethis_option_onhover', TRUE),
     'twitter_suffix' => variable_get('sharethis_twitter_suffix', ''),
     'twitter_handle' => variable_get('sharethis_twitter_handle', ''),
     'twitter_recommends' => variable_get('sharethis_twitter_recommends', ''),
@@ -476,10 +483,16 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
     $st_js .= "<script type='text/javascript' src='http://w.sharethis.com/button/buttons.js'></script>";
   }
 
-  // Provide the publisher ID.
-  $stlight = drupal_json_encode(array(
+  // Provide the stLight options.
+  $options = array(
     'publisher' => $data_options['publisherID'],
-  ));
+  );
+  if (isset($data_options['onhover']) && $data_options['onhover'] == FALSE) {
+    $options['onhover'] = false;
+  }
+  $stlight = drupal_json_encode($options);
+
+  // Output the embedded JavaScript.
   $st_js .= "<script type='text/javascript'>stLight.options($stlight);</script>";
   return '<div class="sharethis-wrapper">' . $st_spans . $st_js . '</div>';
 }
