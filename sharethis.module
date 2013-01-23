@@ -493,7 +493,7 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
   $stlight = drupal_json_encode($options);
 
   // Output the embedded JavaScript.
-  $st_js .= "<script type='text/javascript'>stLight.options($stlight);</script>";
+  $st_js .= "<script type='text/javascript'>if (stLight !== undefined) { stLight.options($stlight); }</script>";
   return '<div class="sharethis-wrapper">' . $st_spans . $st_js . '</div>';
 }
 
