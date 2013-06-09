@@ -349,14 +349,14 @@ function sharethis_node_view($node, $view_mode, $langcode) {
             '#tag' => 'div', // Wrap it in a div.
             '#type' => 'html_tag',
             '#attributes' => array('class' => array('sharethis-buttons')),
-            '#value' => sharethis_get_button_HTML($data_options, $mPath, $mTitle),
+            '#value' => theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle)),
             '#weight' => intval(variable_get('sharethis_weight', 10)),
           );
         break;
         case 'links':
           $links['sharethis'] = array(
             'html' => TRUE,
-            'title' => sharethis_get_button_HTML($data_options, $mPath, $mTitle),
+            'title' => theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle)),
             'attributes' => array('class' => array('sharethis-buttons')),
           );
           $node->content['links']['sharethis'] = array(
@@ -373,6 +373,21 @@ function sharethis_node_view($node, $view_mode, $langcode) {
       }
     }
   }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function sharethis_theme($existing, $type, $theme, $path) {
+  $theme = array();
+  $theme['sharethis'] = array(
+    'variables' => array(
+      'data_options' => NULL,
+      'm_path' => NULL,
+      'm_title' => NULL,
+    ),
+  );
+  return $theme;
 }
 
 /**
@@ -400,10 +415,13 @@ function sharethis_get_options_array() {
 }
 
 /**
- * sharethisGet_button_HTML is the function that creates the ShareThis code
- * It returns the appropriate html based on your settings.
+ * Theme function for ShareThis code based on settings.
  */
-function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
+function theme_sharethis($variables) {
+  $data_options = $variables['data_options'];
+  $m_path = $variables['m_path'];
+  $m_title = $variables['m_title'];
+
   // Inject the extra services.
   foreach ($data_options['option_extras'] as $service) {
     $data_options['services'] .= ',"' . $service . '"';
@@ -428,10 +446,10 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
     $serviceCodeName = drupal_substr($service[1], 0, -1);
 
     // Switch the title on a per-service basis if required.
-    $title = $mTitle;
+    $title = $m_title;
     switch ($serviceCodeName) {
       case 'twitter':
-        $title = empty($data_options['twitter_suffix']) ? $mTitle : check_plain($mTitle) . ' ' . check_plain($data_options['twitter_suffix']);
+        $title = empty($data_options['twitter_suffix']) ? $title : check_plain($title) . ' ' . check_plain($data_options['twitter_suffix']);
         break;
     }
 
@@ -440,7 +458,7 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
 
     // Put together the span attributes.
     $attributes = array(
-      'st_url' => $mPath,
+      'st_url' => $m_path,
       'st_title' => $title,
       'class' => 'st_' . $display . $type,
     );
@@ -531,7 +549,7 @@ function sharethis_block_contents() {
     $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
     $mPath = url($_GET['q'], array('absolute' => TRUE));
     $mTitle = drupal_get_title();
-    return sharethis_get_button_HTML($data_options, $mPath, $mTitle);
+    return theme('sharethis', array($data_options, $mPath, $mTitle));
   }
 }
 
@@ -547,7 +565,7 @@ function sharethis_comment_view($comment, $view_mode, $langcode) {
       'fragment' => 'comment-' . $comment->cid,
     ));
     $mTitle = drupal_get_title();
-    $html = sharethis_get_button_HTML($data_options, $mPath, $mTitle);
+    $html = theme('sharethis', array($data_options, $mPath, $mTitle));
     $comment->content['sharethis'] = array(
       '#type' => 'html_tag',
       '#value' => $html,
