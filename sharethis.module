@@ -599,3 +599,12 @@ function sharethis_views_api() {
     'path' => drupal_get_path('module', 'sharethis') . '/views',
   );
 }
+
+/**
+ * Implements of hook_ctools_plugin_directory
+ */
+function sharethis_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'panels' || $module == 'ctools') {
+    return 'plugins/' . $plugin;
+  }
+}
