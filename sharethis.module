@@ -549,7 +549,8 @@ function sharethis_block_contents() {
     $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
     $mPath = url($_GET['q'], array('absolute' => TRUE));
     $mTitle = drupal_get_title();
-    return theme('sharethis', array($data_options, $mPath, $mTitle));
+
+    return theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle));
   }
 }
 
@@ -565,7 +566,7 @@ function sharethis_comment_view($comment, $view_mode, $langcode) {
       'fragment' => 'comment-' . $comment->cid,
     ));
     $mTitle = drupal_get_title();
-    $html = theme('sharethis', array($data_options, $mPath, $mTitle));
+    $html = theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle));
     $comment->content['sharethis'] = array(
       '#type' => 'html_tag',
       '#value' => $html,
