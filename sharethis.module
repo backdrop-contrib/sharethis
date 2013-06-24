@@ -310,35 +310,17 @@ function sharethis_node_view($node, $view_mode, $langcode) {
   // First get all of the options for the sharethis widget from the database:
   $data_options = sharethis_get_options_array();
 
-  // This looks to see if the path variable has been posted by some rewrite module.
-  // This is not super efficient, O(N), but N is often less than 20.
-  $is_path = FALSE;
-  foreach ($node as $k => $v) {
-    if ($k == "path") {
-      $is_path = TRUE;
-    }
-  }
-  // This will choose the path to use.
-  if ($is_path) {
-    $path_module = $node->path;
-  }
-  else {
-    $path_module = "/node/" . $node->nid;
-  }
-
-  // Pathauto integration !
-  if (module_exists('pathauto')) {
-    $path_module = '/' . drupal_lookup_path('alias', 'node/' . $node->nid);
-  }
-
-  global $base_url;
   // Get the full path to insert into the Share Buttons.
-  $mPath = $base_url . $path_module;
+  $mPath = url('node/' . $node->nid, array('absolute' => TRUE));
   $mTitle = $node->title;
 
   // Only display the ShareThis buttons if this node fits all the requirements
-  if (strpos($data_options['nodeType'], $node->type) !== FALSE) { // Make sure this is the right type of node.
-    if (($data_options['viewMode'] == "1") && ($view_mode == "teaser")) { // If "don't show for teaser" is enabled, and this is a teaser, don't do anything
+  $types = array_filter(explode(',', $data_options['nodeType']));
+
+  // Make sure this is the right type of node.
+  if (in_array($node->type, $types)) {
+    // If "don't show for teaser" is enabled, and this is a teaser, don't do anything
+    if (($data_options['viewMode'] == "1") && ($view_mode == "teaser")) {
       // Do nothing.
     }
     else {
