@@ -476,7 +476,7 @@ function theme_sharethis($variables) {
   $st_js .= '</script>';
 
   // Check if we're using SSL or not.
-  if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+  if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') {
     $st_js .= "<script type='text/javascript' src='https://ws.sharethis.com/button/buttons.js'></script>";
   }
   else {
