@@ -242,6 +242,12 @@ function sharethis_configuration_form($form, &$form_state) {
     '#description' => t('Display a zero (0) instead of "New" in the count for content not yet shared.'),
     '#default_value' => variable_get('sharethis_option_neworzero', FALSE),
   );
+  $form['advanced']['sharethis_donotcopy'] = array(
+    '#title' => t('Do Not Copy'),
+    '#description' => t("Disables the pasting of \"See more: yourURL.com#SThashtag\" after a user copies-and-pastes text."),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('sharethis_donotcopy', FALSE),
+  );
   return system_settings_form($form);
 }
 
@@ -396,6 +402,7 @@ function sharethis_get_options_array() {
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
     'onhover' => variable_get('sharethis_option_onhover', TRUE),
     'neworzero' => variable_get('sharethis_option_neworzero', FALSE),
+    'donotcopy' => variable_get('sharethis_donotcopy', FALSE),
     'twitter_suffix' => variable_get('sharethis_twitter_suffix', ''),
     'twitter_handle' => variable_get('sharethis_twitter_handle', ''),
     'twitter_recommends' => variable_get('sharethis_twitter_recommends', ''),
@@ -499,6 +506,9 @@ function theme_sharethis($variables) {
   }
   if ($data_options['neworzero']) {
     $options['newOrZero'] = "zero";
+  }
+  if ($data_options['donotcopy']) {
+    $options['doNotCopy'] = "true";
   }
   
   $stlight = drupal_json_encode($options);
