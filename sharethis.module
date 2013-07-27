@@ -550,7 +550,10 @@ function sharethis_block_contents() {
     // First get all of the options for the sharethis widget from the database:
     $data_options = sharethis_get_options_array();
     $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-    $mPath = url($_GET['q'], array('absolute' => TRUE));
+    if ($path == variable_get('site_frontpage')) {
+      $path = "<front>";
+    }
+    $mPath = url($path, array('absolute' => TRUE));
     $mTitle = decode_entities(drupal_get_title());
 
     return theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle));
