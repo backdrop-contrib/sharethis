@@ -508,9 +508,9 @@ function theme_sharethis($variables) {
     $options['newOrZero'] = "zero";
   }
   if ($data_options['donotcopy']) {
-    $options['doNotCopy'] = "true";
+    $options['doNotCopy'] = TRUE;
   }
-  
+
   $stlight = drupal_json_encode($options);
 
   // Output the embedded JavaScript.
