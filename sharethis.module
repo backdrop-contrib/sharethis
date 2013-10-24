@@ -529,46 +529,54 @@ function theme_sharethis($variables) {
     ));
   }
 
-  // These are the ShareThis scripts:
-  $st_js_options['switchTo5x'] = $data_options['widget'] == 'st_multi' ? TRUE : FALSE;
-  if ($data_options['late_load']) {
-    $st_js_options['__st_loadLate'] = TRUE;
-  }
-  $st_js = "<script type='text/javascript'>";
-  foreach ($st_js_options as $name => $value) {
-    $st_js .= 'var ' . $name . ' = ' . drupal_json_encode($value) . ';';
-  }
-  $st_js .= '</script>';
-
-  // Check if we're using SSL or not.
-  if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') {
-    $st_js .= "<script type='text/javascript' src='https://ws.sharethis.com/button/buttons.js'></script>";
-  }
-  else {
-    $st_js .= "<script type='text/javascript' src='http://w.sharethis.com/button/buttons.js'></script>";
-  }
-
-  // Provide the stLight options.
-  $options = array(
-    'publisher' => $data_options['publisherID'],
-  );
-  if (isset($data_options['onhover']) && $data_options['onhover'] == FALSE) {
-    $options['onhover'] = FALSE;
-  }
-  if ($data_options['neworzero']) {
-    $options['newOrZero'] = "zero";
-  }
-  if ($data_options['donotcopy']) {
-    $options['doNotCopy'] = TRUE;
-  }
-
-  $stlight = drupal_json_encode($options);
 
   // Output the embedded JavaScript.
-  $st_js .= "<script type='text/javascript'>if (stLight !== undefined) { stLight.options($stlight); }</script>";
-  return '<div class="sharethis-wrapper">' . $st_spans . $st_js . '</div>';
+  sharethis_include_js();
+  return '<div class="sharethis-wrapper">' . $st_spans . '</div>';
 }
 
+/**
+ * Include st js scripts.
+ */
+function sharethis_include_js() {
+  $has_run = &drupal_static(__FUNCTION__, FALSE);
+  if (!$has_run) {
+    // These are the ShareThis scripts:
+    $data_options = sharethis_get_options_array();
+    $st_js_options['switchTo5x'] = $data_options['widget'] == 'st_multi' ? TRUE : FALSE;
+    if ($data_options['late_load']) {
+      $st_js_options['__st_loadLate'] = TRUE;
+    }
+    $st_js = "";
+    foreach ($st_js_options as $name => $value) {
+      $st_js .= 'var ' . $name . ' = ' . drupal_json_encode($value) . ';';
+    }
+    drupal_add_js($st_js, 'inline');
+    
+    $external = "//ws.sharethis.com/button/buttons.js";
+    drupal_add_js($external, 'external');
+    
+    // Provide the stLight options.
+    $options = array(
+      'publisher' => $data_options['publisherID'],
+    );
+    if (isset($data_options['onhover']) && $data_options['onhover'] == FALSE) {
+      $options['onhover'] = FALSE;
+    }
+    if ($data_options['neworzero']) {
+      $options['newOrZero'] = "zero";
+    }
+    if ($data_options['donotcopy']) {
+      $options['doNotCopy'] = TRUE;
+    }
+    $stlight = drupal_json_encode($options);
+    $st_js = "if (stLight !== undefined) { stLight.options($stlight); }";
+    drupal_add_js($st_js, 'inline');
+    
+    $has_run = TRUE;
+  }
+  return $has_run;
+}
 /**
  * Implements hook_block_info().
  */
