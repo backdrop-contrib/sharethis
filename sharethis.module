@@ -18,7 +18,7 @@ function sharethis_help($path, $arg) {
   global $base_url;
   switch ($path) {
     case 'admin/config/services/sharethis':
-      return '<p>' . t('Choose the widget, button family, and services for using <a href="@sharethis">ShareThis</a> to share content online.', array('@sharethis' => 'http://sharethis.com')) . '</p>';
+      return '<p>' . t('Choose the widget, button family, and services for using <a href="@sharethis">ShareThis</a> to share content online.', array('@sharethis' => 'http://www.sharethis.com')) . '</p>';
       break;
     case "admin/help#sharethis":
       $return_value = "<p>" . t("This plugin places the ShareThis widget on each node.") . '</p>';
@@ -29,6 +29,21 @@ function sharethis_help($path, $arg) {
       $return_value .= '<p>' . t('For more information, please visit <a href="@help">help.sharethis.com</a>.', array('@help' => 'http://help.sharethis.com/integration/drupal')) . '</p>';
       return $return_value;
       break;
+  }
+}
+
+/**
+ * Converts given value to boolean.
+ *
+ *
+ * @param val
+ *   Which value to convert to boolean
+ */
+function to_boolean($val) {
+  if (strtolower(trim($val)) === 'false') {
+    return false;
+  } else {
+    return (boolean)$val;
   }
 }
 
@@ -133,8 +148,28 @@ function sharethis_configuration_form($form, &$form_state) {
       'Google Plus One:plusone' => t('Google Plus One'),
       'Facebook Like:fblike' => t('Facebook Like'),
     ),
-    '#default_value' => variable_get('sharethis_option_extras', array()),
+    '#default_value' => $current_options_array['option_extras'],
   );
+
+  $form['options']['sharethis_cns'] = array(
+    '#title' => t('<b>CopyNShare </b><sup>(<a href="http://support.sharethis.com/customer/portal/articles/517332-share-widget-faqs#copynshare" target="_blank">?</a>)</sup>'),
+    '#type' => 'checkboxes',
+    '#prefix' => '<div id="st_cns_settings">',
+    '#suffix' => '</div><div class="st_cns_container">
+				<p>CopyNShare is the new ShareThis widget feature that enables you to track the shares that occur when a user copies and pastes your website\'s URL or content. ShareThis adds a special #hashtag at the end of your address bar URL to keep track of where your content is being shared on the web, from Facebook, Twitter to emails, etc. When a user copies text within your site, a "See more: yourURL.com#SThashtag" will appear after the pasted text. Enable CopyNShare for your widget! <a href="http://support.sharethis.com/customer/portal/articles/517332-share-widget-faqs#copynshare" target="_blank">FAQ</a>.</p>
+			</div>',
+    '#options' => array(
+		'donotcopy' => t('Measure copy & shares of your site\'s content'),
+		'hashaddress' => t('Measure copy & shares of your site\'s URLs'),
+		),
+    '#default_value' => $current_options_array['sharethis_cns'],
+  );
+
+  $form['options']['sharethis_callesi'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $current_options_array['sharethis_callesi'],
+  );
+
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
   );
@@ -194,7 +229,7 @@ function sharethis_configuration_form($form, &$form_state) {
   // Allow the user to choose which content types will have ShareThis added
   // when using the 'Content' location.
   $content_types = array();
-  $enabled_content_types = variable_get('sharethis_node_types', array());
+  $enabled_content_types = $current_options_array['sharethis_node_types'];
   foreach($entity_info['bundles'] as $bundle => $bundle_info) {
     $content_types[$bundle] = t($bundle_info['label']);
   }
@@ -268,12 +303,6 @@ function sharethis_configuration_form($form, &$form_state) {
     '#description' => t('Display a zero (0) instead of "New" in the count for content not yet shared.'),
     '#default_value' => variable_get('sharethis_option_neworzero', FALSE),
   );
-  $form['advanced']['sharethis_donotcopy'] = array(
-    '#title' => t('Do Not Copy'),
-    '#description' => t("Disables the pasting of \"See more: yourURL.com#SThashtag\" after a user copies-and-pastes text."),
-    '#type' => 'checkbox',
-    '#default_value' => variable_get('sharethis_donotcopy', FALSE),
-  );
   $form['#submit'][] = 'sharethis_configuration_form_submit';
   return system_settings_form($form);
 }
@@ -292,6 +321,11 @@ function sharethis_configuration_form_validate($form, &$form_state) {
 
   // Sanitize the publisher ID option.  Since it's a text field, remove anything that resembles code
   $form_state['values']['sharethis_publisherID'] = filter_xss($form_state['values']['sharethis_publisherID'], array());
+
+  if($form_state['values']['sharethis_callesi'] == 1){
+	unset($form_state['values']['sharethis_cns']);
+  }
+  unset($form_state['values']['sharethis_callesi']);
 
   // Ensure default value for twitter suffix
   $form_state['values']['sharethis_twitter_suffix'] = (isset($form_state['values']['sharethis_twitter_suffix'])) ? $form_state['values']['sharethis_twitter_suffix'] : '';
@@ -362,8 +396,8 @@ function sharethis_node_view($node, $view_mode, $langcode) {
   // Check where we want to display the ShareThis widget.
   switch (variable_get('sharethis_location', 'content')) {
     case 'content':
-      $enabled_types = variable_get('sharethis_node_types', array());
-      if (isset($enabled_types[$node->type]) && $enabled_types[$node->type] == $node->type) {
+      $enabled_types = $data_options['sharethis_node_types'];
+      if (isset($enabled_types[$node->type]) && $enabled_types[$node->type] === $node->type) {
         $node->content['sharethis'] = array(
           '#tag' => 'div', // Wrap it in a div.
           '#type' => 'html_tag',
@@ -433,6 +467,36 @@ function sharethis_theme($existing, $type, $theme, $path) {
 }
 
 /**
+* get_stLight_options() function is creating options to be passed to stLight.options
+* $data_options array is the settings selected by publisher in admin panel
+*/
+function get_stLight_options($data_options)
+{
+	// Provide the publisher ID.
+	$paramsStLight = array(
+		'publisher' => $data_options['publisherID'],
+	);
+	if($data_options['sharethis_callesi'] == 0){
+		$paramsStLight["doNotCopy"] = !to_boolean($data_options['sharethis_cns']['donotcopy']);
+		$paramsStLight["hashAddressBar"] = to_boolean($data_options['sharethis_cns']['hashaddress']);
+		if(!($paramsStLight["hashAddressBar"]) && $paramsStLight["doNotCopy"]){
+			$paramsStLight["doNotHash"] = true;
+		}else{
+			$paramsStLight["doNotHash"] = false;
+		}
+	}
+	if (isset($data_options['onhover']) && $data_options['onhover'] == FALSE) {
+	   $paramsStLight['onhover'] = FALSE;
+	}
+    if ($data_options['neworzero']) {
+      $paramsStLight['newOrZero'] = "zero";
+    }
+	$stlight = drupal_json_encode($paramsStLight);
+
+	return $stlight;
+}
+
+/**
  * sharethisGetOptionArray is a helper function for DB access.
  *
  * Returns options that have been stored in the database.
@@ -440,24 +504,27 @@ function sharethis_theme($existing, $type, $theme, $path) {
  * @TODO: Switch from this function to just straight variable_get() calls.
  */
 function sharethis_get_options_array() {
+  $default_sharethis_nodetypes = array("article"=>"article", "page"=>"page");
   $view_modes = array();
   foreach (array_keys(node_type_get_types()) as $type) {
-    $view_modes[$type] = variable_get('sharethis_' . $type . '_options', array());
+    $view_modes[$type] = variable_get('sharethis_' . $type . '_options', $default_sharethis_nodetypes);
   }
   return array(
-    'buttons' => variable_get('sharethis_button_option', 'stbc_large'),
+    'buttons' => variable_get('sharethis_button_option', 'stbc_button'),
     'publisherID' => variable_get('sharethis_publisherID', ''),
-    'services' => variable_get('sharethis_service_option', '"Tweet:twitter","Facebook:facebook","ShareThis:sharethis"'),
-    'option_extras' => variable_get('sharethis_option_extras', array()),
+    'services' => variable_get('sharethis_service_option', '"Facebook:facebook","Tweet:twitter","LinkedIn:linkedin","Email:email","ShareThis:sharethis","Pinterest:pinterest"'),
+    'option_extras' => variable_get('sharethis_option_extras', array("Google Plus One:plusone"=>"Google Plus One:plusone", "Facebook Like:fblike"=>"Facebook Like:fblike")),
     'widget' => variable_get('sharethis_widget_option', 'st_multi'),
     'onhover' => variable_get('sharethis_option_onhover', TRUE),
     'neworzero' => variable_get('sharethis_option_neworzero', FALSE),
-    'donotcopy' => variable_get('sharethis_donotcopy', FALSE),
     'twitter_suffix' => variable_get('sharethis_twitter_suffix', ''),
     'twitter_handle' => variable_get('sharethis_twitter_handle', ''),
     'twitter_recommends' => variable_get('sharethis_twitter_recommends', ''),
     'late_load' => variable_get('sharethis_late_load', FALSE),
     'view_modes' => $view_modes,
+    'sharethis_cns' => variable_get('sharethis_cns',array('donotcopy'=>'0','hashaddress'=>'0')),
+	'sharethis_callesi' => (NULL == variable_get('sharethis_cns'))?1:0,
+	'sharethis_node_types' => variable_get('sharethis_node_types', $default_sharethis_nodetypes),
   );
 }
 
@@ -553,23 +620,11 @@ function sharethis_include_js() {
     }
     drupal_add_js($st_js, 'inline');
     
-    $external = "//ws.sharethis.com/button/buttons.js";
+    //$external = "//ws.sharethis.com/button/buttons.js";
+    $external = ((isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') ? "https://ws." : "http://w.") . "sharethis.com/button/buttons.js";
     drupal_add_js($external, 'external');
     
-    // Provide the stLight options.
-    $options = array(
-      'publisher' => $data_options['publisherID'],
-    );
-    if (isset($data_options['onhover']) && $data_options['onhover'] == FALSE) {
-      $options['onhover'] = FALSE;
-    }
-    if ($data_options['neworzero']) {
-      $options['newOrZero'] = "zero";
-    }
-    if ($data_options['donotcopy']) {
-      $options['doNotCopy'] = TRUE;
-    }
-    $stlight = drupal_json_encode($options);
+    $stlight = get_stLight_options($data_options);
     $st_js = "if (stLight !== undefined) { stLight.options($stlight); }";
     drupal_add_js($st_js, 'inline');
     

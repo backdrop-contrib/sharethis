@@ -35,6 +35,7 @@ function sharethis_uninstall() {
   db_delete('variable')
     ->condition('name', db_like('sharethis_') . '%', 'LIKE')
     ->execute();
+    cache_clear_all('variables', 'cache');
 }
 
 /**
