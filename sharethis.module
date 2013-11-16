@@ -638,6 +638,7 @@ function sharethis_include_js() {
 function sharethis_block_info() {
   $blocks['sharethis_block'] = array(
     'info' => t('ShareThis'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
   );
   return $blocks;
 }
