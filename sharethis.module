@@ -303,6 +303,12 @@ function sharethis_configuration_form($form, &$form_state) {
     '#description' => t('Display a zero (0) instead of "New" in the count for content not yet shared.'),
     '#default_value' => variable_get('sharethis_option_neworzero', FALSE),
   );
+  $form['advanced']['sharethis_option_shorten'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display short URL'),
+    '#description' => t('Display either the full or the shortened URL.'),
+    '#default_value' => variable_get('sharethis_option_shorten', TRUE),
+  );
   $form['#submit'][] = 'sharethis_configuration_form_submit';
   return system_settings_form($form);
 }
@@ -491,6 +497,9 @@ function get_stLight_options($data_options)
     if ($data_options['neworzero']) {
       $paramsStLight['newOrZero'] = "zero";
     }
+  if (!$data_options['shorten']) {
+    $paramsStLight['shorten'] = 'false';
+  }
 	$stlight = drupal_json_encode($paramsStLight);
 
 	return $stlight;
@@ -525,6 +534,7 @@ function sharethis_get_options_array() {
     'sharethis_cns' => variable_get('sharethis_cns',array('donotcopy'=>'0','hashaddress'=>'0')),
 	'sharethis_callesi' => (NULL == variable_get('sharethis_cns'))?1:0,
 	'sharethis_node_types' => variable_get('sharethis_node_types', $default_sharethis_nodetypes),
+    'shorten' => variable_get('sharethis_option_shorten', TRUE),
   );
 }
 
