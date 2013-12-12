@@ -625,6 +625,7 @@ function sharethis_include_js() {
     // These are the ShareThis scripts:
     $data_options = sharethis_get_options_array();
     $st_js_options = array();
+    $st_js_options['switchTo5x'] = $data_options['widget'] == 'st_multi' ? TRUE : FALSE;
     if ($data_options['late_load']) {
       $st_js_options['__st_loadLate'] = TRUE;
     }
