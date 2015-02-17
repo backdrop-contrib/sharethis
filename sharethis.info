@@ -1,6 +1,7 @@
 name = ShareThis
 description = Add the <a href="http://www.sharethis.com/">ShareThis</a> widget to nodes on your site.
-core = 7.x
+version = BACKDROP_VERSION
+backdrop = 1.x
 package = Sharing
 configure = admin/config/services/sharethis
 

@@ -4,17 +4,38 @@
  * A module that adds one of the ShareThis widget to your website.
  */
 
-/**
- * Implements hook_config_info().
- */
-function sharethis_config_info() {
-  $prefixes['sharethis.settings'] = array(
-    'label' => t('Sharethis settings'),
-    'group' => t('Configuration'),
-  );
-  return $prefixes;
-}
+/**  
+To port this module from Drupal to BackdropCMS in a timely matter, the port-er @biolithic took out several parts of the module that don't work with Backdrop yet
+until he learns how the Backdrop theme system works.  If you would like to add those parts in yourself, this is the original Drupal module file which contains all those the parts.
+*/
 
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param path
+ *   Which path of the site we're using to display help
+ * @param arg
+ *   Array that holds the current path as returned from arg() function
+ */
+function sharethis_help($path, $arg) {
+  global $base_url;
+  switch ($path) {
+    case 'admin/config/services/sharethis':
+      return '<p>' . t('Choose the widget, button family, and services for using <a href="@sharethis">ShareThis</a> to share content online.', array('@sharethis' => 'http://www.sharethis.com')) . '</p>';
+      break;
+    case "admin/help#sharethis":
+      $return_value = "<p>" . t("This plugin places the ShareThis widget on each node.") . '</p>';
+      $return_value .= "<ul><li>" . t("The Block pulls the URL from the current page and current Drupal title, the node version pulls it from the node title and url.") . '</li>';
+      $return_value .= "<li>" . t("The block can be placed anywhere on a page, the node is limited to where nodes normally go") . '</li>';
+      $return_value .= "<li>" . t("The block module is more likely to be compatible with other plugins that use blocks rather than nodes. (Panels works nicely with the block)") . '</li></ul>';
+      $return_value .= "<p>" . t('For various configuration options please got to <a href="@sharethis">the settings page</a>.', array('@sharethis' => url('admin/config/services/sharethis'))) . '</p>';
+      $return_value .= '<p>' . t('For more information, please visit <a href="@help">help.sharethis.com</a>.', array('@help' => 'http://help.sharethis.com/integration/drupal')) . '</p>';
+      return $return_value;
+      break;
+  }
+}
 
 /**
  * Converts given value to boolean.
@@ -49,13 +70,13 @@ function sharethis_permission() {
 function sharethis_configuration_form($form, &$form_state) {
   // First, setup variables we will need.
   // Get the path variables setup.
-  $my_path = backdrop_get_path('module', 'sharethis');
+  $my_path = drupal_get_path('module', 'sharethis');
   // Load the css and js for our module's configuration.
-  backdrop_add_css($my_path . '/ShareThisForm.css');
-  backdrop_add_js('https://ws.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
-  backdrop_add_js($my_path . '/ShareThisForm.js');
-  backdrop_add_js($my_path . '/stlib_picker.js');
-  backdrop_add_css($my_path . '/stlib_picker.css');
+  drupal_add_css($my_path . '/ShareThisForm.css');
+  drupal_add_js('https://ws.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
+  drupal_add_js($my_path . '/ShareThisForm.js');
+  drupal_add_js($my_path . '/stlib_picker.js');
+  drupal_add_css($my_path . '/stlib_picker.css');
   $current_options_array = sharethis_get_options_array();
   global $base_url;
 
@@ -71,11 +92,11 @@ function sharethis_configuration_form($form, &$form_state) {
   $service_string = $current_options_array['services'];
   $service_string_markup = "";
   foreach (explode(",", $service_string) as $name => $string) {
-    $key = explode(":", backdrop_substr($string, 0, -1));
+    $key = explode(":", drupal_substr($string, 0, -1));
     $key = $key[1];
     $service_string_markup .= "\"" . $key . "\",";
   }
-  $service_string_markup = backdrop_substr($service_string_markup, 0, -1);
+  $service_string_markup = drupal_substr($service_string_markup, 0, -1);
 
   // Create the variables for publisher keys.
   $publisher = $current_options_array['publisherID'];
@@ -107,7 +128,7 @@ function sharethis_configuration_form($form, &$form_state) {
     '#required' => TRUE,
     '#type' => 'textfield',
     '#prefix' => '<div>',
-    '#suffix' => '</div><div id="myPicker"></div><script type="text/javascript">stlib_picker.setupPicker(jQuery("#myPicker"), [' . $service_string_markup . '], backdrop_st.serviceCallback);</script>',
+    '#suffix' => '</div><div id="myPicker"></div><script type="text/javascript">stlib_picker.setupPicker(jQuery("#myPicker"), [' . $service_string_markup . '], drupal_st.serviceCallback);</script>',
     '#title' => t("Choose Your Services."),
     '#default_value' => t($service_string),
     '#maxlength' => 1024,
@@ -146,7 +167,7 @@ function sharethis_configuration_form($form, &$form_state) {
       'block' => t('Block'),
       'links' => t('Links area'),
     ),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_location'),
+    '#default_value' => variable_get('sharethis_location', 'content'),
   );
 
   // Add an information section for each location type, each dependent on the
@@ -201,7 +222,7 @@ function sharethis_configuration_form($form, &$form_state) {
   $form['context']['sharethis_comments'] = array(
     '#title' => t('Comments'),
     '#type' => 'checkbox',
-    '#default_value' => config_get('sharethis.settings', 'sharethis_comments'), 
+    '#default_value' => variable_get('sharethis_comments', FALSE),
     '#description' => t('Display ShareThis on comments.'),
     '#access' => module_exists('comment'),
   );
@@ -210,8 +231,8 @@ function sharethis_configuration_form($form, &$form_state) {
     '#description' => t('The weight of the widget determines the location on the page where it will appear.'),
     '#required' => FALSE,
     '#type' => 'select',
-    '#options' => backdrop_map_assoc(array(-100, -50, -25, -10, 0, 10, 25, 50, 100)),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_weight'),   
+    '#options' => drupal_map_assoc(array(-100, -50, -25, -10, 0, 10, 25, 50, 100)),
+    '#default_value' => variable_get('sharethis_weight', 10),
   );
   $form['advanced'] = array(
     '#type' => 'fieldset',
@@ -229,43 +250,43 @@ function sharethis_configuration_form($form, &$form_state) {
     '#title' => t('Late Load'),
     '#description' => t("You can change the order in which ShareThis widget loads on the user's browser. By default the ShareThis widget loader loads as soon as the browser encounters the JavaScript tag; typically in the tag of your page. ShareThis assets are generally loaded from a CDN closest to the user. However, if you wish to change the default setting so that the widget loads after your web-page has completed loading then you simply tick this option."),
     '#type' => 'checkbox',
-    '#default_value' => config_get('sharethis.settings', 'sharethis_late_load'),  
+    '#default_value' => variable_get('sharethis_late_load', FALSE),
   );
   $form['advanced']['sharethis_twitter_suffix'] = array(
     '#title' => t("Twitter Suffix"),
     '#description' => t("Optionally append a Twitter handle, or text, so that you get pinged when someone shares an article. Example: <em>via @YourNameHere</em>"),
     '#type' => 'textfield',
-    '#default_value' => config_get('sharethis.settings', 'sharethis_twitter_suffix'), 
+    '#default_value' => variable_get('sharethis_twitter_suffix', ''),
   );
   $form['advanced']['sharethis_twitter_handle'] = array(
     '#title' => t('Twitter Handle'),
     '#description' => t('Twitter handle to use when sharing.'),
     '#type' => 'textfield',
-    '#default_value' => config_get('sharethis.settings', 'sharethis_twitter_handle'), 
+    '#default_value' => variable_get('sharethis_twitter_handle', ''),
   );
   $form['advanced']['sharethis_twitter_recommends'] = array(
     '#title' => t('Twitter recommends'),
     '#description' => t('Specify a twitter handle to be recommended to the user.'),
     '#type' => 'textfield',
-    '#default_value' => config_get('sharethis.settings', 'sharethis_twitter_recommends'), 
+    '#default_value' => variable_get('sharethis_twitter_recommends', ''),
   );
   $form['advanced']['sharethis_option_onhover'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display ShareThis widget on hover'),
     '#description' => t('If disabled, the ShareThis widget will be displayed on click instead of hover.'),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_option_onhover'), 
+    '#default_value' => variable_get('sharethis_option_onhover', TRUE),
   );
   $form['advanced']['sharethis_option_neworzero'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display count "0" instead of "New"'),
     '#description' => t('Display a zero (0) instead of "New" in the count for content not yet shared.'),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_option_neworzero'), 
+    '#default_value' => variable_get('sharethis_option_neworzero', FALSE),
   );
   $form['advanced']['sharethis_option_shorten'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display short URL'),
     '#description' => t('Display either the full or the shortened URL.'),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_option_shorten'), 
+    '#default_value' => variable_get('sharethis_option_shorten', TRUE),
   );
   $form['advanced']['sharethis_cns'] = array(
     '#title' => t('<b>CopyNShare </b><sup>(<a href="http://support.sharethis.com/customer/portal/articles/517332-share-widget-faqs#copynshare" target="_blank">?</a>)</sup>'),
@@ -297,14 +318,7 @@ function sharethis_configuration_form($form, &$form_state) {
   );
 
   $form['#submit'][] = 'sharethis_configuration_form_submit';
-  // Add a submit button
-  $form['actions']['#type'] = 'actions';
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save configuration'),
-  );
-  // Return the form!
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -342,21 +356,11 @@ function sharethis_configuration_form_validate($form, &$form_state) {
  */
 function sharethis_configuration_form_submit($form, &$form_state) {
   // If the location is changing to/from 'content', clear the Field Info cache.
-  $current_location = config_get('sharethis.settings', 'sharethis_location');  
+  $current_location = variable_get('sharethis_location', 'content');
   $new_location = $form_state['values']['sharethis_location'];
   if (($current_location == 'content' || $new_location == 'content') && $current_location != $new_location) {
     field_info_cache_clear();
   }
-  
-$config = config('sharethis.settings');
-
-foreach ($form_state['values'] as $key => $value)
-{
-$config->set($key, $value);
-}
-
-$config->save();
-backdrop_set_message(t('The configuration options have been saved sir.'));
 }
 
  /**
@@ -368,7 +372,7 @@ function sharethis_menu() {
   $items['admin/config/services/sharethis'] = array(
     'title' => 'ShareThis',
     'description' => 'Choose the widget, button family, and services for using ShareThis to share content online.',
-    'page callback' => 'backdrop_get_form',
+    'page callback' => 'drupal_get_form',
     'page arguments' => array('sharethis_configuration_form'),
     'access arguments' => array('administer sharethis')
   );
@@ -398,71 +402,27 @@ function sharethis_node_view($node, $view_mode, $langcode) {
   }
   // First get all of the options for the sharethis widget from the database:
   $data_options = sharethis_get_options_array();
-  
+
   // Get the full path to insert into the Share Buttons.
   $mPath = url('node/' . $node->nid, array('absolute' => TRUE));
   $mTitle = $node->title;
-  
+
   // Check where we want to display the ShareThis widget.
-  switch (config_get('sharethis.settings', 'sharethis_location')) {  
+  switch (variable_get('sharethis_location', 'content')) {
     case 'content':
       $enabled_types = $data_options['sharethis_node_types'];
       if (isset($enabled_types[$node->type]) && $enabled_types[$node->type] === $node->type) {
-        
-        // Inject the extra services.
-  foreach ($data_options['option_extras'] as $service) {
-    $data_options['services'] .= ',"' . $service . '"';
-  }
-
-  // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
-  $type = backdrop_substr($data_options['buttons'], 4);
-  $type = $type == "_" ? "" : check_plain($type);
-  $service_array = explode(",", $data_options['services']);
-  $st_spans = "<div class='sharethis-buttons'><div class='sharethis-wrapper'>";
-  foreach ($service_array as $service_full) {
-    // Strip the quotes from the element in the array (They are there for javascript)
-    $service = explode(":", $service_full);
-    // Service names are expected to be parsed by Name:machine_name. If only one
-    // element in the array is given, it's an invalid service.
-    if (count($service) < 2) {
-      continue;
-    }
-
-    // Find the service code name.
-    $serviceCodeName = backdrop_substr($service[1], 0, -1);
-    // Switch the title on a per-service basis if required.
-    $title = $m_title;
-    switch ($serviceCodeName) {
-      case 'twitter':
-        $title = empty($data_options['twitter_suffix']) ? $title : check_plain($title) . ' ' . check_plain($data_options['twitter_suffix']);
-        break;
-    }
-
-    // Sanitize the service code for display.
-    $display = check_plain($serviceCodeName);
-
-    //// Put together the span attributes.
-    $st_spans .='<span st_url="' . $m_path . '" st_title="' . $title . '" class="st_' . $display . $type . '"';
-
-    if ($serviceCodeName == 'twitter') {
-      if (!empty($data_options['twitter_handle'])) {
-        $st_spans .='<span st_via="' . $data_options['twitter_handle'] . '" st_username="' . $data_options['twitter_recommends'] . '"';
-      }
-    }
-
-    $st_spans .='</span>';
-    }
-    $st_spans .='</div></div>'; 
-
-    $node->content['node'] = array(
-          '#markup' => $st_spans, 
-          '#weight' => intval(config_get('sharethis.settings', 'sharethis_weight')),  
+        $node->content['sharethis'] = array(
+          '#tag' => 'div', // Wrap it in a div.
+          '#type' => 'html_tag',
+          '#attributes' => array('class' => 'sharethis-buttons'),
+          '#value' => theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle)),
+          '#weight' => intval(variable_get('sharethis_weight', 10)),
         );
-    sharethis_include_js();
-    }
+      }
     break;
     case 'links':
-      $enabled_view_modes = config_get('sharethis.settings', 'sharethis_' . $node->type . '_options');
+      $enabled_view_modes = variable_get('sharethis_' . $node->type . '_options', array());
       if (isset($enabled_view_modes[$view_mode]) && $enabled_view_modes[$view_mode]) {
         $links['sharethis'] = array(
           'html' => TRUE,
@@ -477,10 +437,9 @@ function sharethis_node_view($node, $view_mode, $langcode) {
           ),
           '#tag' => 'div', // Wrap it in a div.
           '#type' => 'html_tag',
-          '#weight' => intval(config_get('sharethis.settings', 'sharethis_weight')),  
+          '#weight' => intval(variable_get('sharethis_weight', 10)),
         );
        }
-       dsm($node->content['links']);
     break;
   }
 }
@@ -491,19 +450,34 @@ function sharethis_node_view($node, $view_mode, $langcode) {
 function sharethis_field_extra_fields() {
   $extra = array();
   // Only add extra fields if the location is the node content.
-  if (config_get('sharethis.settings', 'sharethis_location')) {  
+  if (variable_get('sharethis_location', 'content') == 'content') {
     $entity_info = entity_get_info('node');
     foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
       $extra['node'][$bundle]['display'] = array(
         'sharethis' => array(
           'label' => t('ShareThis'),
           'description' => t('ShareThis links'),
-          'weight' => intval(config_get('sharethis.settings', 'sharethis_weight')),  
+          'weight' => intval(variable_get('sharethis_weight', 10)),
         ),
       );
      }
    }
   return $extra;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function sharethis_theme($existing, $type, $theme, $path) {
+  $theme = array();
+  $theme['sharethis'] = array(
+    'variables' => array(
+      'data_options' => NULL,
+      'm_path' => NULL,
+      'm_title' => NULL,
+    ),
+  );
+  return $theme;
 }
 
 /**
@@ -535,7 +509,7 @@ function get_stLight_options($data_options)
   if (!$data_options['shorten']) {
     $paramsStLight['shorten'] = 'false';
   }
-	$stlight = backdrop_json_encode($paramsStLight);
+	$stlight = drupal_json_encode($paramsStLight);
 
 	return $stlight;
 }
@@ -551,34 +525,107 @@ function sharethis_get_options_array() {
   $default_sharethis_nodetypes = array("article"=>"article", "page"=>"page");
   $view_modes = array();
   foreach (array_keys(node_type_get_types()) as $type) {
-    $view_modes[$type] = config_get('sharethis.settings', 'sharethis_' . $type . '_options');
-  } 
+    $view_modes[$type] = variable_get('sharethis_' . $type . '_options', $default_sharethis_nodetypes);
+  }
   return array(
-    'buttons' => config_get('sharethis.settings', 'sharethis_button_option'),
-    'publisherID' => config_get('sharethis.settings', 'sharethis_publisherID'),  
-    'services' => config_get('sharethis.settings', 'sharethis_service_option'),
-    'option_extras' => config_get('sharethis.settings', 'sharethis_option_extras'),
-    'widget' => config_get('sharethis.settings', 'sharethis_widget_option'),
-    'onhover' => config_get('sharethis.settings', 'sharethis_option_onhover'),
-    'neworzero' => config_get('sharethis.settings', 'sharethis_option_neworzero'),
-    'twitter_suffix' => config_get('sharethis.settings', 'sharethis_twitter_suffix'),
-    'twitter_handle' => config_get('sharethis.settings', 'sharethis_twitter_handle'),
-    'twitter_recommends' => config_get('sharethis.settings', 'sharethis_twitter_recommends'),
-    'late_load' => config_get('sharethis.settings', 'sharethis_late_load'),
+    'buttons' => variable_get('sharethis_button_option', 'stbc_button'),
+    'publisherID' => variable_get('sharethis_publisherID', ''),
+    'services' => variable_get('sharethis_service_option', '"Facebook:facebook","Tweet:twitter","LinkedIn:linkedin","Email:email","ShareThis:sharethis","Pinterest:pinterest"'),
+    'option_extras' => variable_get('sharethis_option_extras', array("Google Plus One:plusone"=>"Google Plus One:plusone", "Facebook Like:fblike"=>"Facebook Like:fblike")),
+    'widget' => variable_get('sharethis_widget_option', 'st_multi'),
+    'onhover' => variable_get('sharethis_option_onhover', TRUE),
+    'neworzero' => variable_get('sharethis_option_neworzero', FALSE),
+    'twitter_suffix' => variable_get('sharethis_twitter_suffix', ''),
+    'twitter_handle' => variable_get('sharethis_twitter_handle', ''),
+    'twitter_recommends' => variable_get('sharethis_twitter_recommends', ''),
+    'late_load' => variable_get('sharethis_late_load', FALSE),
     'view_modes' => $view_modes,
-    'sharethis_cns' => config_get('sharethis.settings', 'sharethis_cns'),
-	'sharethis_callesi' => (NULL == config_get('sharethis.settings', 'sharethis_cns'))?1:0,
-	'sharethis_node_types' => config_get('sharethis.settings', 'sharethis_node_types'),
-    'shorten' => config_get('sharethis.settings', 'sharethis_option_shorten'),
+    'sharethis_cns' => variable_get('sharethis_cns',array('donotcopy'=>'0','hashaddress'=>'0')),
+	'sharethis_callesi' => (NULL == variable_get('sharethis_cns'))?1:0,
+	'sharethis_node_types' => variable_get('sharethis_node_types', $default_sharethis_nodetypes),
+    'shorten' => variable_get('sharethis_option_shorten', TRUE),
   );
 }
 
+/**
+ * Theme function for ShareThis code based on settings.
+ */
+function theme_sharethis($variables) {
+  $data_options = $variables['data_options'];
+  $m_path = $variables['m_path'];
+  $m_title = $variables['m_title'];
+
+  // Inject the extra services.
+  foreach ($data_options['option_extras'] as $service) {
+    $data_options['services'] .= ',"' . $service . '"';
+  }
+
+  // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
+  $type = drupal_substr($data_options['buttons'], 4);
+  $type = $type == "_" ? "" : check_plain($type);
+  $service_array = explode(",", $data_options['services']);
+  $st_spans = "";
+  foreach ($service_array as $service_full) {
+    // Strip the quotes from the element in the array (They are there for javascript)
+    $service = explode(":", $service_full);
+
+    // Service names are expected to be parsed by Name:machine_name. If only one
+    // element in the array is given, it's an invalid service.
+    if (count($service) < 2) {
+      continue;
+    }
+
+    // Find the service code name.
+    $serviceCodeName = drupal_substr($service[1], 0, -1);
+
+    // Switch the title on a per-service basis if required.
+    $title = $m_title;
+    switch ($serviceCodeName) {
+      case 'twitter':
+        $title = empty($data_options['twitter_suffix']) ? $title : check_plain($title) . ' ' . check_plain($data_options['twitter_suffix']);
+        break;
+    }
+
+    // Sanitize the service code for display.
+    $display = check_plain($serviceCodeName);
+
+    // Put together the span attributes.
+    $attributes = array(
+      'st_url' => $m_path,
+      'st_title' => $title,
+      'class' => 'st_' . $display . $type,
+    );
+    if ($serviceCodeName == 'twitter') {
+      if (!empty($data_options['twitter_handle'])) {
+        $attributes['st_via'] = $data_options['twitter_handle'];
+        $attributes['st_username'] = $data_options['twitter_recommends'];
+      }
+    }
+    // Only show the display text if the type is set.
+    if (!empty($type)) {
+      $attributes['displayText'] = check_plain($display);
+    }
+    // Render the span tag.
+    $st_spans .= theme('html_tag', array(
+      'element' => array(
+        '#tag' => 'span',
+        '#attributes' => $attributes,
+        '#value' => '', // It's an empty span tag.
+      ),
+    ));
+  }
+
+
+  // Output the embedded JavaScript.
+  sharethis_include_js();
+  return '<div class="sharethis-wrapper">' . $st_spans . '</div>';
+}
 
 /**
  * Include st js scripts.
  */
 function sharethis_include_js() {
-  $has_run = &backdrop_static(__FUNCTION__, FALSE);
+  $has_run = &drupal_static(__FUNCTION__, FALSE);
   if (!$has_run) {
     // These are the ShareThis scripts:
     $data_options = sharethis_get_options_array();
@@ -589,30 +636,29 @@ function sharethis_include_js() {
     }
     $st_js = "";
     foreach ($st_js_options as $name => $value) {
-      $st_js .= 'var ' . $name . ' = ' . backdrop_json_encode($value) . ';';
+      $st_js .= 'var ' . $name . ' = ' . drupal_json_encode($value) . ';';
     }
-    backdrop_add_js($st_js, 'inline');
+    drupal_add_js($st_js, 'inline');
     
     //$external = "//ws.sharethis.com/button/buttons.js";
     $external = ((isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') ? "https://ws." : "http://w.") . "sharethis.com/button/buttons.js";
-    backdrop_add_js($external, 'external');
+    drupal_add_js($external, 'external');
     
     $stlight = get_stLight_options($data_options);
     $st_js = "if (stLight !== undefined) { stLight.options($stlight); }";
-    backdrop_add_js($st_js, 'inline');
+    drupal_add_js($st_js, 'inline');
     
     $has_run = TRUE;
   }
   return $has_run;
 }
-
 /**
  * Implements hook_block_info().
  */
 function sharethis_block_info() {
   $blocks['sharethis_block'] = array(
     'info' => t('ShareThis'),
-    'cache' => BACKDROP_CACHE_PER_PAGE,
+    'cache' => DRUPAL_CACHE_PER_PAGE,
   );
   return $blocks;
 }
@@ -635,88 +681,39 @@ function sharethis_block_view($delta='') {
  * @return string
  */
 function sharethis_block_contents() {
-  if (config_get('sharethis.settings', 'sharethis_location') == 'block') {
+  if (variable_get('sharethis_location', 'content') == 'block') {
     // First get all of the options for the sharethis widget from the database:
     $data_options = sharethis_get_options_array();
-    
     $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-    if ($path == config_get('system.core', 'site_frontpage')) { 
+    if ($path == variable_get('site_frontpage')) {
       $path = "<front>";
     }
     $mPath = url($path, array('absolute' => TRUE));
-    $mTitle = decode_entities(backdrop_get_title());
+    $mTitle = decode_entities(drupal_get_title());
 
-        
-        // Inject the extra services.
-  foreach ($data_options['option_extras'] as $service) {
-    $data_options['services'] .= ',"' . $service . '"';
+    return theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle));
   }
-
-  // The share buttons are simply spans of the form class='st_SERVICE_BUTTONTYPE' -- "st" stands for ShareThis.
-  $type = backdrop_substr($data_options['buttons'], 4);
-  $type = $type == "_" ? "" : check_plain($type);
-  $service_array = explode(",", $data_options['services']);
-  $st_spans = "<div class='sharethis-buttons'><div class='sharethis-wrapper'>";
-  foreach ($service_array as $service_full) {
-    // Strip the quotes from the element in the array (They are there for javascript)
-    $service = explode(":", $service_full);
-    // Service names are expected to be parsed by Name:machine_name. If only one
-    // element in the array is given, it's an invalid service.
-    if (count($service) < 2) {
-      continue;
-    }
-
-    // Find the service code name.
-    $serviceCodeName = backdrop_substr($service[1], 0, -1);
-    // Switch the title on a per-service basis if required.
-    $title = $m_title;
-    switch ($serviceCodeName) {
-      case 'twitter':
-        $title = empty($data_options['twitter_suffix']) ? $title : check_plain($title) . ' ' . check_plain($data_options['twitter_suffix']);
-        break;
-    }
-
-    // Sanitize the service code for display.
-    $display = check_plain($serviceCodeName);
-
-    //// Put together the span attributes.
-    $st_spans .='<span st_url="' . $mPath . '" st_title="' . $title . '" class="st_' . $display . $type . '"';
-
-    if ($serviceCodeName == 'twitter') {
-      if (!empty($data_options['twitter_handle'])) {
-        $st_spans .='<span st_via="' . $data_options['twitter_handle'] . '" st_username="' . $data_options['twitter_recommends'] . '"';
-      }
-    }
-
-    $st_spans .='</span>';
-    }
-    $st_spans .='</div></div>'; 
-
-    sharethis_include_js();
-    }
-
-return $st_spans;
 }
 
 /**
  * Implements hook_comment_view().
  */
 function sharethis_comment_view($comment, $view_mode, $langcode) {
-  if (config_get('sharethis.settings', 'sharethis_comments')) {
+  if (variable_get('sharethis_comments', FALSE)) {
     $data_options = sharethis_get_options_array();
     $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
     $mPath = url($_GET['q'], array(
       'absolute' => TRUE,
       'fragment' => 'comment-' . $comment->cid,
     ));
-    $mTitle = decode_entities(backdrop_get_title());
+    $mTitle = decode_entities(drupal_get_title());
     $html = theme('sharethis', array('data_options' => $data_options, 'm_path' => $mPath, 'm_title' => $mTitle));
     $comment->content['sharethis'] = array(
       '#type' => 'html_tag',
       '#value' => $html,
       '#tag' => 'div',
       '#attributes' => array('class' => 'sharethis-comment'),
-      '#weight' => intval(config_get('sharethis.settings', 'sharethis_weight')),
+      '#weight' => intval(variable_get('sharethis_weight', 10)),
     );
   }
 }
@@ -740,7 +737,7 @@ function sharethis_contextual_links_view_alter(&$element, $items) {
 function sharethis_views_api() {
   return array(
     'api' => 3,
-    'path' => backdrop_get_path('module', 'sharethis') . '/views',
+    'path' => drupal_get_path('module', 'sharethis') . '/views',
   );
 }
 

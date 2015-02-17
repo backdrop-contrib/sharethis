@@ -22,7 +22,7 @@ class sharethis_handler_field_link extends views_handler_field_entity {
     /**
      * @todo
      * The line below requires theming of the sharethis button HTML as described
-     * in http://drupal.org/node/1335836 . Once the theming issue is resolved,
+     * in http://backdrop.org/node/1335836 . Once the theming issue is resolved,
      * this line can be uncommented/modified to implement that functionality.
      */
     

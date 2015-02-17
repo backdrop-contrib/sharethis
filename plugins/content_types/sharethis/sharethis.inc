@@ -16,8 +16,8 @@ function sharethis_sharethis_content_type_render($subtype, $conf, $panel_args) {
   else {
     $path = ($conf['path'] == 'global') ? '<front>' : $_GET['q'];
     $url = url($path, array('absolute' => TRUE));
-  }
-  $title = ($conf['path'] == 'current') ? drupal_get_title() : variable_get('site_name', '');
+  }  
+  $title = ($conf['path'] == 'current') ? backdrop_get_title() : config_get('system.core', 'site_name');
 
   $block = new stdClass();
   $block->module  = 'sharethis';

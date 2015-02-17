@@ -3,8 +3,8 @@
  * This file contains most of the code for the configuration page.
  */
  
-// Create the drupal ShareThis object for clean code and namespacing:
-var drupal_st = {
+// Create the backdrop ShareThis object for clean code and namespacing:
+var backdrop_st = {
 	// These are handlerd for updating the widget pic class.
 	multiW: function() {
 		jQuery(".st_widgetPic").addClass("st_multi");
@@ -14,23 +14,23 @@ var drupal_st = {
 	},
 	// These are the handlers for updating the button pic class (stbc = sharethisbuttonclass).
 	smallChicklet: function () {
-		drupal_st.removeButtonClasses();
+		backdrop_st.removeButtonClasses();
 		jQuery("#stb_sprite").addClass("stbc_");
 	},
 	largeChicklet: function () {
-		drupal_st.removeButtonClasses();
+		backdrop_st.removeButtonClasses();
 		jQuery("#stb_sprite").addClass("stbc_large");
 	},
 	hcount: function() {
-		drupal_st.removeButtonClasses();
+		backdrop_st.removeButtonClasses();
 		jQuery("#stb_sprite").addClass("stbc_hcount");
 	},
 	vcount: function() {
-		drupal_st.removeButtonClasses();
+		backdrop_st.removeButtonClasses();
 		jQuery("#stb_sprite").addClass("stbc_vcount");
 	},
 	button: function() {
-		drupal_st.removeButtonClasses();
+		backdrop_st.removeButtonClasses();
 		jQuery("#stb_sprite").addClass("stbc_button");
 	},
 	// This is a helper function for updating button pictures.
@@ -62,7 +62,7 @@ var drupal_st = {
 
 		if(jQuery('input[name=sharethis_callesi]').val() == 1){
 			//alert("esi called");
-			drupal_st.getGlobalCNSConfig();
+			backdrop_st.getGlobalCNSConfig();
 		}else{
 			//alert("settings found");
 		}
@@ -83,9 +83,9 @@ var drupal_st = {
 	},
 	getGlobalCNSConfig: function (){
 		try {
-			drupal_st.odjs((("https:" == document.location.protocol) ? "https://wd-edge.sharethis.com/button/getDefault.esi?cb=drupal_st.cnsCallback" : "http://wd-edge.sharethis.com/button/getDefault.esi?cb=drupal_st.cnsCallback"));
+			backdrop_st.odjs((("https:" == document.location.protocol) ? "https://wd-edge.sharethis.com/button/getDefault.esi?cb=backdrop_st.cnsCallback" : "http://wd-edge.sharethis.com/button/getDefault.esi?cb=backdrop_st.cnsCallback"));
 		} catch(err){
-			drupal_st.cnsCallback(err);
+			backdrop_st.cnsCallback(err);
 		}
 	},
 	updateDoNotHash: function (){
@@ -93,23 +93,26 @@ var drupal_st = {
 	},
 	// Function to add various events to our html form elements
 	addEvents: function() {
-		jQuery("#edit-sharethis-widget-option-st-multi").click(drupal_st.multiW);
-		jQuery("#edit-sharethis-widget-option-st-direct").click(drupal_st.classicW);
+		jQuery("#edit-sharethis-widget-option-st-multi").click(backdrop_st.multiW);
+		jQuery("#edit-sharethis-widget-option-st-direct").click(backdrop_st.classicW);
 		
-		jQuery("#edit-sharethis-button-option-stbc-").click(drupal_st.smallChicklet);
-		jQuery("#edit-sharethis-button-option-stbc-large").click(drupal_st.largeChicklet);
-		jQuery("#edit-sharethis-button-option-stbc-hcount").click(drupal_st.hcount);
-		jQuery("#edit-sharethis-button-option-stbc-vcount").click(drupal_st.vcount);
-		jQuery("#edit-sharethis-button-option-stbc-button").click(drupal_st.button);
+		jQuery("#edit-sharethis-button-option-stbc-").click(backdrop_st.smallChicklet);
+		jQuery("#edit-sharethis-button-option-stbc-large").click(backdrop_st.largeChicklet);
+		jQuery("#edit-sharethis-button-option-stbc-hcount").click(backdrop_st.hcount);
+		jQuery("#edit-sharethis-button-option-stbc-vcount").click(backdrop_st.vcount);
+		jQuery("#edit-sharethis-button-option-stbc-button").click(backdrop_st.button);
 		
-		jQuery(".st_formButtonSave").click(drupal_st.updateOptions);
+		jQuery(".st_formButtonSave").click(backdrop_st.updateOptions);
 
-		jQuery('#st_cns_settings').find('input').live('click', drupal_st.updateDoNotHash);
+		jQuery('#st_cns_settings').find('input').on('click', backdrop_st.updateDoNotHash);
 	},
 	serviceCallback: function() {
 		var services = stlib_picker.getServices("myPicker");
 		var outputString = "";
-		for(i=0;i<services.length;i++) {
+		alert(services);
+		var thel = services.length - 1;
+		for(i=0;i<thel;i++) {
+			alert(_all_services[services[i]]);
 			outputString += "\"" + _all_services[services[i]].title + ":"
 			outputString += services[i] + "\","
 		}
@@ -127,9 +130,9 @@ var drupal_st = {
 		}
 
 		var obj = {
-				doNotHash: drupal_st.to_boolean(response.doNotHash),
-				doNotCopy: drupal_st.to_boolean(response.doNotCopy),
-				hashAddressBar: drupal_st.to_boolean(response.hashAddressBar)
+				doNotHash: backdrop_st.to_boolean(response.doNotHash),
+				doNotCopy: backdrop_st.to_boolean(response.doNotCopy),
+				hashAddressBar: backdrop_st.to_boolean(response.hashAddressBar)
 		};
 
 		if(obj.doNotHash == false || obj.doNotHash === "false"){
@@ -151,6 +154,6 @@ var drupal_st = {
 	}
 };
 //After the page is loaded, we want to add events to dynamically created elements.
-jQuery(document).ready(drupal_st.addEvents);
+jQuery(document).ready(backdrop_st.addEvents);
 //After it's all done, hide the text field for the service picker so that no one messes up the data.
-jQuery(document).ready(drupal_st.setupServiceText);
+jQuery(document).ready(backdrop_st.setupServiceText);

@@ -57,7 +57,7 @@ stlib_picker.setupPicker = function(jQElement, newDefaults, callback) {
 	});
 	for(i=0;i<pickerDefaults.length;i++) {
 		var ul = jQElement.children(".stp_pickerLeft").children(".stp_ulLeft");
-		ul.append("<li id='st_li_" + pickerDefaults[i] + "' class='stp_li'><img src='http://w.sharethis.com/images/"+pickerDefaults[i]+"_32.png'></img><span class='stp_liText'>" + _all_services[pickerDefaults[i]].title + "</span></li>");
+		ul.append("<li id='st_li_" + pickerDefaults[i] + "' class='stp_li'><img src='http://w.sharethis.com/images/"+pickerDefaults[i]+"_32.png'></img><span class='stp_liText'>" + pickerDefaults[i] + "</span></li>");
 	}
 	
 	//Add the various Event handlers 
