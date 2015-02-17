@@ -23,12 +23,19 @@ The code for this project was based on the original share project for Drupal 5.x
 Features
 
 Customize your ShareThis code using the STAPI
+
 Select node types you wish to display ShareThis module on
+
 Choose to display in $teaser view or not
+
 Choose to display the ShareThis link in either the $link items, or in the $node->content itself
+
 Customize the weight of the ShareThis link if in $node placement
+
 Uses the ShareThis jQuery plugin so the ShareThis servers are queried after page rendering
+
 Place a ShareThis block anywhere on your site
+
 Views integration
 
 TESTED
@@ -39,7 +46,7 @@ Simple Working in Backdrop 1.0 -- placement and working sharing in node content 
 KNOWN ISSUES
 ---------------------
 
-None critical for Backdrop yet.  Using a different way to append sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
+None critical for Backdrop yet.  Using a different way to append Sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
 
 REQUIREMENTS
 ------------
@@ -69,7 +76,6 @@ complete text.
 
 Maintainers
 -----------
-Sponsors include Disqus, ImageX Media, AETN, Acquia and Examiner.com.
 
 Created by:
 
