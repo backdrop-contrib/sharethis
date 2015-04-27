@@ -1,15 +1,20 @@
 SHARETHIS
-===========
+===================
 
 CONTENTS OF THIS FILE
 ---------------------
 
  - Introduction
+ - Tested
+ - Known Issues
+ - Special Thanks
  - Requirements
  - Installation
- - Permissions
+ - Coming From Drupal?
  - Usage
- - Sponsors
+ - License
+ - Credits
+ - Maintainers
 
 INTRODUCTION
 ------------
@@ -34,49 +39,62 @@ Views integration
 TESTED
 -----
 
-Simple Working in Backdrop 1.0 -- placement and working sharing in node content and blocks only so far.
+Simple working in Backdrop 1.0 -- placement and working sharing in node content and blocks only so far.
 
 KNOWN ISSUES
 ---------------------
 
 None critical for Backdrop yet.  Using a different way to append sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
 
+SPECIAL THANKS
+--------------
+
+Sponsors include Disqus, ImageX Media, AETN, Acquia and Examiner.com.
+
 REQUIREMENTS
 ------------
 
-@todo - none
+none
 
 INSTALLATION
 ------------
 
-@todo
+Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
+
+
+COMING FROM DRUPAL?
+-------------------
+
+Nothing substantially different.
 
 PERMISSIONS
 ------------
 
 @todo
 
+
 USAGE
 -----
 
-@todo
+You need social media knowledge and probably social media accounts/API keys for this module to provide value.
 
-License
+LICENSE
 -------
 
-This project is GPL v2 software. See the LICENSE.txt file in this directory for
-complete text.
+This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
 
-Maintainers
+CREDITS
 -----------
-Sponsors include Disqus, ImageX Media, AETN, Acquia and Examiner.com.
 
-Created by:
+This module is based on the ShareThis module for Drupal, originally written and maintained by a large number of contributors, including:
 
-Rob Loach <https://www.backdrop.org/u/robloach>
+- Rob Loach <https://www.backdrop.org/u/robloach>
+
+MAINTAINERS
+-----------
+
+- seeking
 
 Ported to Backdrop by:
 
  - biolithic <https://github.com/biolithic>
-
-seeking a maintainer for Backdrop
