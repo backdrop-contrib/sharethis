@@ -1,8 +1,8 @@
 name = ShareThis
 description = Add the <a href="http://www.sharethis.com/">ShareThis</a> widget to nodes on your site.
 version = BACKDROP_VERSION
-backdrop = 1.x
-package = Sharing
+backdrop = 1.x-1.1
+package = Social
 configure = admin/config/services/sharethis
 type = module
 

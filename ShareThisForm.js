@@ -109,10 +109,10 @@ var backdrop_st = {
 	serviceCallback: function() {
 		var services = stlib_picker.getServices("myPicker");
 		var outputString = "";
-		alert(services);
+		// alert(services);
 		var thel = services.length - 1;
 		for(i=0;i<thel;i++) {
-			alert(_all_services[services[i]]);
+			// alert(_all_services[services[i]]);
 			outputString += "\"" + _all_services[services[i]].title + ":"
 			outputString += services[i] + "\","
 		}

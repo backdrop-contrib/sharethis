@@ -46,12 +46,14 @@ Views integration
 TESTED
 -----
 
-Simple working in Backdrop 1.0 -- placement and working sharing in node content and blocks only so far.
+Simple working in Backdrop 1.1 -- placed in node/content area and shared via Twitter, placed in blocks/Layout area and shared via Gmail, altered look and feel in some config options and shared via Linkedin.
 
 KNOWN ISSUES
 ---------------------
 
 None critical for Backdrop yet.  Using a different way to append Sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
+
+There are many, many options to this module and not all of them have been tested for Backdrop CMS yet.
 
 SPECIAL THANKS
 --------------
@@ -72,7 +74,7 @@ Install this module using the official Backdrop CMS instructions at https://back
 COMING FROM DRUPAL?
 -------------------
 
-Nothing substantially different.
+Using a different way to append Sharethis to the page than the theme_mymodule function in the original Drupal module.
 
 PERMISSIONS
 ------------
