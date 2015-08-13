@@ -1,24 +1,6 @@
 SHARETHIS
 ===================
 
-CONTENTS OF THIS FILE
----------------------
-
- - Introduction
- - Tested
- - Known Issues
- - Special Thanks
- - Requirements
- - Installation
- - Coming From Drupal?
- - Usage
- - License
- - Credits
- - Maintainers
-
-INTRODUCTION
-------------
-
 Sharethis places those "Share with..." icons/links on the content on your page.
 
 Integration with the ShareThis social bookmarking utility on selected node types.
@@ -42,6 +24,21 @@ Uses the ShareThis jQuery plugin so the ShareThis servers are queried after page
 Place a ShareThis block anywhere on your site
 
 Views integration
+
+CONTENTS OF THIS FILE
+---------------------
+
+ - Introduction
+ - Tested
+ - Known Issues
+ - Special Thanks
+ - Requirements
+ - Installation
+ - Coming From Drupal?
+ - Usage
+ - License
+ - Credits
+ - Maintainers
 
 TESTED
 -----
