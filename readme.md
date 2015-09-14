@@ -1,9 +1,24 @@
 SHARETHIS
-===================
+---------------------
 
 Sharethis places those "Share with..." icons/links on the content on your page.
 
 Integration with the ShareThis social bookmarking utility on selected node types.
+
+CONTENTS OF THIS FILE
+---------------------
+
+ - Introduction
+ - Tested
+ - Known Issues
+ - Special Thanks
+ - Requirements
+ - Installation
+ - Coming From Drupal?
+ - Usage
+ - License
+ - Credits
+ - Maintainers
 
 The code for this project was based on the original share project for Drupal 5.x. The code for this project has been trimmed down to only work with the ShareThis system, and not require any additional modules to work properly.
 
@@ -25,21 +40,6 @@ Place a ShareThis block anywhere on your site
 
 Views integration
 
-CONTENTS OF THIS FILE
----------------------
-
- - Introduction
- - Tested
- - Known Issues
- - Special Thanks
- - Requirements
- - Installation
- - Coming From Drupal?
- - Usage
- - License
- - Credits
- - Maintainers
-
 TESTED
 -----
 
@@ -51,11 +51,6 @@ KNOWN ISSUES
 None critical for Backdrop yet.  Using a different way to append Sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
 
 There are many, many options to this module and not all of them have been tested for Backdrop CMS yet.
-
-SPECIAL THANKS
---------------
-
-Sponsors include Disqus, ImageX Media, AETN, Acquia and Examiner.com.
 
 REQUIREMENTS
 ------------
