@@ -8,16 +8,17 @@
  * This is the main configuration form for the admin page.
  */
 function sharethis_configuration_form($form, &$form_state) {
-  // First, setup variables we will need.
   // Get the path variables setup.
   $my_path = backdrop_get_path('module', 'sharethis');
   // Load the css and js for our module's configuration.
-  backdrop_add_css($my_path . '/ShareThisForm.css');
+  backdrop_add_css($my_path . '/css/ShareThisForm.css');
   backdrop_add_js('https://ws.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
-  backdrop_add_js($my_path . '/ShareThisForm.js');
-  backdrop_add_js($my_path . '/stlib_picker.js');
-  backdrop_add_css($my_path . '/stlib_picker.css');
+  backdrop_add_js($my_path . '/js/ShareThisForm.js');
+  backdrop_add_js($my_path . '/js/stlib_picker.js');
+  backdrop_add_css($my_path . '/css/stlib_picker.css');
+
   $current_options_array = sharethis_get_options_array();
+
   global $base_url;
 
   // Create the variables related to widget choice.
