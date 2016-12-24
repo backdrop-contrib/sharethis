@@ -165,7 +165,8 @@ function sharethis_field_extra_fields() {
  */
 function sharethis_block_info() {
   $blocks['sharethis_block'] = array(
-    'info' => t('ShareThis'),
+    'info' => t('ShareThis buttons'),
+    'description' => t('Provides social icons with links for easily sharing content.'),
     'cache' => BACKDROP_CACHE_PER_PAGE,
   );
   return $blocks;
