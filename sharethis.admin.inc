@@ -11,11 +11,11 @@ function sharethis_configuration_form($form, &$form_state) {
   // Get the path variables setup.
   $my_path = backdrop_get_path('module', 'sharethis');
   // Load the css and js for our module's configuration.
-  backdrop_add_css($my_path . '/css/ShareThisForm.css');
   backdrop_add_js('https://ws.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
-  backdrop_add_js($my_path . '/js/ShareThisForm.js');
+  backdrop_add_js($my_path . '/js/share-this-form.js');
   backdrop_add_js($my_path . '/js/stlib_picker.js');
   backdrop_add_css($my_path . '/css/stlib_picker.css');
+  backdrop_add_css($my_path . '/css/share-this-form.css');
 
   $current_options_array = sharethis_get_options_array();
 
@@ -64,7 +64,7 @@ function sharethis_configuration_form($form, &$form_state) {
     '#suffix' => '</div>'
   );
   $form['options']['sharethis_service_option'] = array(
-    '#description' => t("<b>Add</b> a service by selecting it on the right and clicking the <i>left arrow</i>.  <b>Remove</b> it by clicking the <i>right arrow</i>.<br /><b>Change the order</b> of services under \"Selected Services\" by using the <i>up</i> and <i>down</i> arrows."),
+    '#description' => t("<b>Add</b> a service by selecting it on the right and clicking the <i>left arrow</i>.<br/><b>Remove</b> it by clicking the <i>right arrow</i>.<br/><b>Change the order</b> of services under \"Selected Services\" by using the <i>up</i> and <i>down</i> arrows."),
     '#required' => TRUE,
     '#type' => 'textfield',
     '#prefix' => '<div>',
@@ -74,8 +74,8 @@ function sharethis_configuration_form($form, &$form_state) {
     '#maxlength' => 1024,
   );
   $form['options']['sharethis_option_extras'] = array(
-    '#title' => t('Extra services'),
-    '#description' => t('Select additional services which will be available. These are not officially supported by ShareThis, but are available.'),
+    '#title' => t('Additional unsupported services'),
+    '#description' => t('These services are not officially supported by ShareThis.'),
     '#type' => 'checkboxes',
     '#options' => array(
       'Google Plus One:plusone' => t('Google Plus One'),
@@ -89,22 +89,19 @@ function sharethis_configuration_form($form, &$form_state) {
     '#default_value' => $current_options_array['sharethis_callesi'],
   );
 
-  $form['additional_settings'] = array(
-    '#type' => 'vertical_tabs',
-  );
   $form['context'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Context'),
+    '#title' => t('Position'),
     '#group' => 'additional_settings',
-    '#description' => t('Configure where the ShareThis widget should appear.'),
+    '#collapsible' => TRUE,
   );
 
   $form['context']['sharethis_location'] = array(
-    '#title' => t('Location'),
+    '#title' => t('Location of the ShareThis widget'),
     '#type' => 'radios',
     '#options' => array(
-      'content' => t('Node content'),
-      'links' => t('Links area'),
+      'content' => t('Display with <strong>fields</strong>'),
+      'links' => t('Display with <strong>links</strong>'),
     ),
     '#default_value' => config_get('sharethis.settings', 'sharethis_location'),
   );
@@ -118,7 +115,7 @@ function sharethis_configuration_form($form, &$form_state) {
 
   // Add help text for the 'content' location.
   $form['context']['content']['help'] = array(
-    '#markup' => t('When using the Content location, you must place the ShareThis links in the <a href="@url">Manage Display</a> section of each content type.', array('@url' => url('admin/structure/types'))),
+    '#markup' => t('When the ShareThis widget is displayed with <strong>fields</strong>, you must place the ShareThis links in the <a href="@url">Manage Display</a> section of each content type.', array('@url' => url('admin/structure/types'))),
     '#weight' => 10,
     '#prefix' => '<em>',
     '#suffix' => '</em>',
@@ -150,8 +147,8 @@ function sharethis_configuration_form($form, &$form_state) {
     $content_types[$bundle] = t($bundle_info['label']);
   }
   $form['context']['content']['sharethis_node_types'] = array(
-    '#title' => t('Node Types'),
-    '#description' => t('Select which node types the ShareThis widget should appear on.'),
+    '#title' => t('Content Types'),
+    '#description' => t('Select which types should display the ShareThis widget.'),
     '#type' => 'checkboxes',
     '#options' => $content_types,
     '#default_value' => $enabled_content_types,
@@ -170,12 +167,20 @@ function sharethis_configuration_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => backdrop_map_assoc(array(-100, -50, -25, -10, 0, 10, 25, 50, 100)),
     '#default_value' => config_get('sharethis.settings', 'sharethis_weight'),
+    '#states' => array(
+      // Hide the view mode settings until needed.
+      'visible' => array(
+        'input[name="sharethis_location"]' => array('value' => 'links'),
+      ),
+    ),
   );
+
   $form['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced'),
-    '#group' => 'additional_settings',
     '#description' => t('The advanced settings can usually be ignored if you have no need for them.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
   $form['advanced']['sharethis_publisherID'] = array(
     '#title' => t("Insert a publisher key (optional)."),
