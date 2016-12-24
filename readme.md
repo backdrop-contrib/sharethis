@@ -1,101 +1,57 @@
-SHARETHIS
----------------------
+ShareThis
+==========
 
-Sharethis places those "Share with..." icons/links on the content on your page.
+Integration with the ShareThis social bookmarking utility on selected content types.
 
-Integration with the ShareThis social bookmarking utility on selected node types.
+The code for this project was based on the original share project for Drupal 5.x. It
+has been trimmed down to only work with the ShareThis system, and not require any 
+additional modules to work properly.
 
-CONTENTS OF THIS FILE
----------------------
+Features:
+* Customize your ShareThis code using the STAPI
+* Select node types you wish to display ShareThis module on
+* Choose to display in $teaser view or not
+* Choose to display the ShareThis link in either the $link items, or in the $node->content itself
+* Customize the weight of the ShareThis link if in $node placement
+* Uses the ShareThis jQuery plugin so the ShareThis servers are queried after page rendering
+* Place a ShareThis block anywhere on your site
+* Views integration
 
- - Introduction
- - Tested
- - Known Issues
- - Special Thanks
- - Requirements
- - Installation
- - Coming From Drupal?
- - Usage
- - License
- - Credits
- - Maintainers
-
-The code for this project was based on the original share project for Drupal 5.x. The code for this project has been trimmed down to only work with the ShareThis system, and not require any additional modules to work properly.
-
-Features
-
-Customize your ShareThis code using the STAPI
-
-Select node types you wish to display ShareThis module on
-
-Choose to display in $teaser view or not
-
-Choose to display the ShareThis link in either the $link items, or in the $node->content itself
-
-Customize the weight of the ShareThis link if in $node placement
-
-Uses the ShareThis jQuery plugin so the ShareThis servers are queried after page rendering
-
-Place a ShareThis block anywhere on your site
-
-Views integration
-
-TESTED
------
-
-Simple working in Backdrop 1.1 -- placed in node/content area and shared via Twitter, placed in blocks/Layout area and shared via Gmail, altered look and feel in some config options and shared via Linkedin.
-
-KNOWN ISSUES
----------------------
-
-None critical for Backdrop yet.  Using a different way to append Sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
-
-There are many, many options to this module and not all of them have been tested for Backdrop CMS yet.
-
-REQUIREMENTS
+Installation
 ------------
 
-none
+- Install this module using the official Backdrop CMS instructions at
+  https://backdropcms.org/guide/modules
+  
+- You need social media knowledge and probably social media accounts/API keys for 
+  this module to provide value.
 
-INSTALLATION
+Known Issues
 ------------
 
-Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
+There are many, many options to this module and not all of them have been tested for 
+Backdrop CMS yet.
 
-
-COMING FROM DRUPAL?
+Coming from Drupal?
 -------------------
 
 Using a different way to append Sharethis to the page than the theme_mymodule function in the original Drupal module.
 
-PERMISSIONS
-------------
+Current Maintainers
+-------------------
 
-@todo
+- biolithic <https://github.com/biolithic>
+- seeking additional maintainers
 
-
-USAGE
------
-
-You need social media knowledge and probably social media accounts/API keys for this module to provide value.
-
-LICENSE
+Credits
 -------
 
-This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
+- Maintained for Drupal by [Rob Loach](https://www.backdrop.org/u/robloach)
+- Ported to Backdrop by [biolithic](https://github.com/biolithic)
+- This module is based on the ShareThis module for Drupal, originally written and maintained by a large number of contributors.
 
-CREDITS
------------
+License
+-------
 
-This module is based on the ShareThis module for Drupal, originally written and maintained by a large number of contributors, including:
-
-- Rob Loach <https://www.backdrop.org/u/robloach>
-
-MAINTAINERS
------------
-
-- seeking
-
-Ported to Backdrop by:
-
- - biolithic <https://github.com/biolithic>
+This project is GPL v2 software. See the LICENSE.txt file in this directory for
+complete text.
