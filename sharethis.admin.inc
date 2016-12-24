@@ -103,7 +103,6 @@ function sharethis_configuration_form($form, &$form_state) {
     '#type' => 'radios',
     '#options' => array(
       'content' => t('Node content'),
-      'block' => t('Block'),
       'links' => t('Links area'),
     ),
     '#default_value' => config_get('sharethis.settings', 'sharethis_location'),
@@ -111,7 +110,7 @@ function sharethis_configuration_form($form, &$form_state) {
 
   // Add an information section for each location type, each dependent on the
   // currently selected location.
-  foreach (array('links', 'content', 'block') as $location_type) {
+  foreach (array('links', 'content') as $location_type) {
     $form['context'][$location_type]['#type'] = 'container';
     $form['context'][$location_type]['#states']['visible'][':input[name="sharethis_location"]'] = array('value' => $location_type);
   }
@@ -123,8 +122,6 @@ function sharethis_configuration_form($form, &$form_state) {
     '#prefix' => '<em>',
     '#suffix' => '</em>',
   );
-  // Add help text for the 'block' location.
-  $form['context']['block']['#children'] = t('You must choose which region to display the <em>ShareThis block</em> in from the <a href="@blocksadmin">Blocks administration</a>.', array('@blocksadmin' => url('admin/structure/block')));
 
   // Add checkboxes for each view mode of each bundle.
   $entity_info = entity_get_info('node');
