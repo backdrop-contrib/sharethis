@@ -63,6 +63,7 @@ function sharethis_node_view($node, $view_mode, $langcode) {
   // Check where we want to display the ShareThis widget.
   switch (config_get('sharethis.settings', 'sharethis_location')) {
     case 'content':
+      $output = '';
       $enabled_types = $data_options['sharethis_node_types'];
       if (isset($enabled_types[$node->type]) && $enabled_types[$node->type] === $node->type) {
         // Inject the extra services.
@@ -74,7 +75,9 @@ function sharethis_node_view($node, $view_mode, $langcode) {
         $type = backdrop_substr($data_options['buttons'], 4);
         $type = $type == "_" ? "" : check_plain($type);
         $service_array = explode(",", $data_options['services']);
-        $output = "<div class='sharethis-buttons'><div class='sharethis-wrapper'>";
+
+        $output .= "<div class='sharethis-buttons'>";
+        $output .= "  <div class='sharethis-wrapper'>";
         foreach ($service_array as $service_full) {
           // Strip the quotes from the element in the array (They are there for javascript)
           $service = explode(":", $service_full);
@@ -98,15 +101,14 @@ function sharethis_node_view($node, $view_mode, $langcode) {
           $display = check_plain($service_code_name);
 
           // Put together the span attributes.
-          $output .='<span st_url="' . $absolute_path . '" st_title="' . $title . '" class="st_' . $display . $type . '"';
-
+          $output .='<span st_url="' . $absolute_path . '" st_title="' . $title . '" class="st_' . $display . $type . '">';
           if ($service_code_name == 'twitter' && !empty($data_options['twitter_handle'])) {
-            $output .='<span st_via="' . $data_options['twitter_handle'] . '" st_username="' . $data_options['twitter_recommends'] . '"';
+            $output .='<span st_via="' . $data_options['twitter_handle'] . '" st_username="' . $data_options['twitter_recommends'] . '">';
           }
-
           $output .='</span>';
         }
-        $output .='</div></div>';
+        $output .='  </div>';
+        $output .='</div>';
 
         $node->content['node'] = array(
           '#markup' => $output,
@@ -212,39 +214,42 @@ function sharethis_block_contents() {
   $type = backdrop_substr($data_options['buttons'], 4);
   $type = $type == "_" ? "" : check_plain($type);
   $service_array = explode(",", $data_options['services']);
-  $output = "<div class='sharethis-buttons'><div class='sharethis-wrapper'>";
-  foreach ($service_array as $service_full) {
-    // Strip the quotes from the element in the array (They are there for javascript)
-    $service = explode(":", $service_full);
-    // Service names are expected to be parsed by Name:machine_name. If only one
-    // element in the array is given, it's an invalid service.
-    if (count($service) < 2) {
-      continue;
-    }
 
-    // Find the service code name.
-    $service_code_name = backdrop_substr($service[1], 0, -1);
-    // Switch the title on a per-service basis if required.
-    $title = $page_title;
-    switch ($service_code_name) {
-      case 'twitter':
-        $title = empty($data_options['twitter_suffix']) ? $title : check_plain($title) . ' ' . check_plain($data_options['twitter_suffix']);
-        break;
-    }
-
-    // Sanitize the service code for display.
-    $display = check_plain($service_code_name);
-
-    // Put together the span attributes.
-    $output .='<span st_url="' . $absolute_path . '" st_title="' . $title . '" class="st_' . $display . $type . '"';
-    if ($service_code_name == 'twitter') {
-      if (!empty($data_options['twitter_handle'])) {
-        $output .='<span st_via="' . $data_options['twitter_handle'] . '" st_username="' . $data_options['twitter_recommends'] . '"';
+  if (!empty($service_array)) {
+    $output .= "<div class='sharethis-buttons'>";
+    $output .= "  <div class='sharethis-wrapper'>";
+    foreach ($service_array as $service_full) {
+      // Strip the quotes from the element in the array (They are there for javascript)
+      $service = explode(":", $service_full);
+      // Service names are expected to be parsed by Name:machine_name. If only one
+      // element in the array is given, it's an invalid service.
+      if (count($service) < 2) {
+        continue;
       }
+
+      // Find the service code name.
+      $service_code_name = backdrop_substr($service[1], 0, -1);
+      // Switch the title on a per-service basis if required.
+      $title = $page_title;
+      switch ($service_code_name) {
+        case 'twitter':
+          $title = empty($data_options['twitter_suffix']) ? $title : check_plain($title) . ' ' . check_plain($data_options['twitter_suffix']);
+          break;
+      }
+
+      // Sanitize the service code for display.
+      $display = check_plain($service_code_name);
+
+      // Put together the span attributes.
+      $output .='<span st_url="' . $absolute_path . '" st_title="' . $title . '" class="st_' . $display . $type . '">';
+      if ($service_code_name == 'twitter' && !empty($data_options['twitter_handle'])) {
+        $output .='<span st_via="' . $data_options['twitter_handle'] . '" st_username="' . $data_options['twitter_recommends'] . '">';
+      }
+      $output .='</span>';
     }
-    $output .='</span>';
+    $output .= '  </div>';
+    $output .= '</div>';
   }
-  $output .='</div></div>';
 
   sharethis_include_js();
 
