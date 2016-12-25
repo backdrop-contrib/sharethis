@@ -2,40 +2,40 @@
  * @file
  * This file contains most of the code for the configuration page.
  */
- 
+
 // Create the backdrop ShareThis object for clean code and namespacing:
 var backdrop_st = {
 	// These are handlerd for updating the widget pic class.
 	multiW: function() {
-		jQuery(".st_widgetPic").addClass("st_multi");
+		jQuery(".sharethis-widget-pic").addClass("st_multi");
 	},
 	classicW: function() {
-		jQuery(".st_widgetPic").removeClass("st_multi");
+		jQuery(".sharethis-widget-pic").removeClass("st_multi");
 	},
 	// These are the handlers for updating the button pic class (stbc = sharethisbuttonclass).
 	smallChicklet: function () {
 		backdrop_st.removeButtonClasses();
-		jQuery("#stb_sprite").addClass("stbc_");
+		jQuery("#stb-sprite").addClass("stbc_");
 	},
 	largeChicklet: function () {
 		backdrop_st.removeButtonClasses();
-		jQuery("#stb_sprite").addClass("stbc_large");
+		jQuery("#stb-sprite").addClass("stbc_large");
 	},
 	hcount: function() {
 		backdrop_st.removeButtonClasses();
-		jQuery("#stb_sprite").addClass("stbc_hcount");
+		jQuery("#stb-sprite").addClass("stbc_hcount");
 	},
 	vcount: function() {
 		backdrop_st.removeButtonClasses();
-		jQuery("#stb_sprite").addClass("stbc_vcount");
+		jQuery("#stb-sprite").addClass("stbc_vcount");
 	},
 	button: function() {
 		backdrop_st.removeButtonClasses();
-		jQuery("#stb_sprite").addClass("stbc_button");
+		jQuery("#stb-sprite").addClass("stbc_button");
 	},
 	// This is a helper function for updating button pictures.
 	removeButtonClasses: function() {
-		var toRemove = jQuery("#stb_sprite");
+		var toRemove = jQuery("#stb-sprite");
 		toRemove.removeClass("stbc_");
 		toRemove.removeClass("stbc_large");
 		toRemove.removeClass("stbc_hcount");
@@ -44,7 +44,7 @@ var backdrop_st = {
 	},
 	//Write helper functions for saving:
 	getWidget: function () {
-		return jQuery(".st_widgetPic").hasClass("st_multiW") ? '5x': '4x';
+		return jQuery(".sharethis-widget-pic").hasClass("st_multiW") ? '5x': '4x';
 	},
 	getButtons: function () {
 		var selectedButton = 'large';
@@ -58,13 +58,10 @@ var backdrop_st = {
 		return selectedButton;
 	},
 	setupServiceText: function () {
-		jQuery("#edit-sharethis-service-option").css({display:"none"});
+		//jQuery("#edit-sharethis-service-option").css({display:"none"});
 
 		if(jQuery('input[name=sharethis_callesi]').val() == 1){
-			//alert("esi called");
 			backdrop_st.getGlobalCNSConfig();
-		}else{
-			//alert("settings found");
 		}
 	},
 	odjs: function(scriptSrc,callBack){
@@ -95,24 +92,20 @@ var backdrop_st = {
 	addEvents: function() {
 		jQuery("#edit-sharethis-widget-option-st-multi").click(backdrop_st.multiW);
 		jQuery("#edit-sharethis-widget-option-st-direct").click(backdrop_st.classicW);
-		
+
 		jQuery("#edit-sharethis-button-option-stbc-").click(backdrop_st.smallChicklet);
 		jQuery("#edit-sharethis-button-option-stbc-large").click(backdrop_st.largeChicklet);
 		jQuery("#edit-sharethis-button-option-stbc-hcount").click(backdrop_st.hcount);
 		jQuery("#edit-sharethis-button-option-stbc-vcount").click(backdrop_st.vcount);
 		jQuery("#edit-sharethis-button-option-stbc-button").click(backdrop_st.button);
-		
-		jQuery(".st_formButtonSave").click(backdrop_st.updateOptions);
 
 		jQuery('#st_cns_settings').find('input').on('click', backdrop_st.updateDoNotHash);
 	},
 	serviceCallback: function() {
 		var services = stlib_picker.getServices("myPicker");
 		var outputString = "";
-		// alert(services);
 		var thel = services.length - 1;
 		for(i=0;i<thel;i++) {
-			// alert(_all_services[services[i]]);
 			outputString += "\"" + _all_services[services[i]].title + ":"
 			outputString += services[i] + "\","
 		}
@@ -130,9 +123,9 @@ var backdrop_st = {
 		}
 
 		var obj = {
-				doNotHash: backdrop_st.to_boolean(response.doNotHash),
-				doNotCopy: backdrop_st.to_boolean(response.doNotCopy),
-				hashAddressBar: backdrop_st.to_boolean(response.hashAddressBar)
+			doNotHash: backdrop_st.to_boolean(response.doNotHash),
+			doNotCopy: backdrop_st.to_boolean(response.doNotCopy),
+			hashAddressBar: backdrop_st.to_boolean(response.hashAddressBar)
 		};
 
 		if(obj.doNotHash == false || obj.doNotHash === "false"){

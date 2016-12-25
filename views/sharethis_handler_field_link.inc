@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Field handler to display ShareThis links.
@@ -17,20 +16,14 @@ class sharethis_handler_field_link extends views_handler_field_entity {
   }
 
   function render_sharethis_link($entity) {
-    $path = url('node/' . $entity->nid, array('absolute' => TRUE));
+    // Get all necessary settings.
+    $data_options = sharethis_get_all_settings();
 
-    /**
-     * @todo
-     * The line below requires theming of the sharethis button HTML as described
-     * in http://backdrop.org/node/1335836 . Once the theming issue is resolved,
-     * this line can be uncommented/modified to implement that functionality.
-     */
-    
-    return theme('sharethis', array(
-      'data_options' => sharethis_get_options_array(),
-      'm_title' => $entity->title,
-      'm_path' => $path,
+    return theme('sharethis_widget', array(
+      'options' => $data_options,
+      'services' => $data_options['services'],
+      'title' => $entity->title,
+      'url' => url('node/' . $entity->nid, array('absolute' => TRUE)),
     ));
-
   }
 }

@@ -8,12 +8,7 @@
  * Implements hook_install().
  */
 function sharethis_install() {
-  $config = config('sharethis.settings');
-  $config->set('sharethis_publisherID', sharethis_create_publisher_key());
-  $config->set('sharethis_service_option', '"Facebook:facebook","Tweet:twitter","LinkedIn:linkedin","Email:email","ShareThis:sharethis","Pinterest:pinterest"');
-  $config->set('sharethis_option_extras', array("Google Plus One:plusone"=>"Google Plus One:plusone", "Facebook Like:fblike"=>"Facebook Like:fblike"));
-  $config->set('sharethis_cns', array('donotcopy'=>'0','hashaddress'=>'0'));
-  $config->save();
+  config_set('sharethis.settings', 'sharethis_publisherID', sharethis_create_publisher_key());
 }
 
 /**
@@ -58,24 +53,22 @@ function sharethis_update_1000() {
   $config->set('sharethis_weight', update_variable_get('sharethis_weight'));
   $config->set('sharethis_late_load', update_variable_get('sharethis_late_load'));
   $config->set('sharethis_twitter_suffix', update_variable_get('sharethis_twitter_suffix'));
-
   $config->set('sharethis_twitter_handle', update_variable_get('sharethis_twitter_handle'));
   $config->set('sharethis_twitter_recommends', update_variable_get('sharethis_twitter_recommends'));
   $config->set('sharethis_option_onhover', update_variable_get('sharethis_option_onhover'));
   $config->set('sharethis_option_neworzero', update_variable_get('sharethis_option_neworzero'));
   $config->set('sharethis_option_shorten', update_variable_get('sharethis_option_shorten'));
-
   $config->set('sharethis_button_option', update_variable_get('sharethis_button_option'));
   $config->set('sharethis_publisherID', update_variable_get('sharethis_publisherID'));
   $config->set('sharethis_service_option', update_variable_get('sharethis_service_option'));
   $config->set('sharethis_option_extras', update_variable_get('sharethis_option_extras'));
   $config->set('sharethis_widget_option', update_variable_get('sharethis_widget_option'));
-
   $config->set('sharethis_option_onhover', update_variable_get('sharethis_option_onhover'));
   $config->set('sharethis_option_neworzero', update_variable_get('sharethis_option_neworzero'));
   $config->set('sharethis_cns', update_variable_get('sharethis_cns'));
   $config->set('sharethis_node_types', update_variable_get('sharethis_node_types'));
   $config->set('sharethis_option_shorten', update_variable_get('sharethis_option_shorten'));
+
   $config->save();
 
   // Delete variables.
@@ -84,19 +77,16 @@ function sharethis_update_1000() {
   update_variable_del('sharethis_weight');
   update_variable_del('sharethis_late_load');
   update_variable_del('sharethis_twitter_suffix');
-
   update_variable_del('sharethis_twitter_handle');
   update_variable_del('sharethis_twitter_recommends');
   update_variable_del('sharethis_option_onhover');
   update_variable_del('sharethis_option_neworzero');
   update_variable_del('sharethis_option_shorten');
-
   update_variable_del('sharethis_button_option');
   update_variable_del('sharethis_service_option');
   update_variable_del('sharethis_option_extras');
   update_variable_del('sharethis_widget_option');
   update_variable_del('sharethis_option_onhover');
-
   update_variable_del('sharethis_option_neworzero');
   update_variable_del('sharethis_cns');
   update_variable_del('sharethis_node_types');

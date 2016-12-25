@@ -1,46 +1,29 @@
 <?php
 /**
  * @file
- * A module that adds one of the ShareThis widget to your website.
+ * Admin functions for ShareThis module.
  */
 
 /**
  * This is the main configuration form for the admin page.
  */
 function sharethis_configuration_form($form, &$form_state) {
-  // Get the path variables setup.
-  $my_path = backdrop_get_path('module', 'sharethis');
   // Load the css and js for our module's configuration.
-  backdrop_add_js('https://ws.sharethis.com/share5x/js/stcommon.js', 'external');  //This is ShareThis's common library - has a serviceList of all the objects that are currently supported.
+  $my_path = backdrop_get_path('module', 'sharethis');
   backdrop_add_js($my_path . '/js/share-this-form.js');
-  backdrop_add_js($my_path . '/js/stlib_picker.js');
-  backdrop_add_css($my_path . '/css/stlib_picker.css');
   backdrop_add_css($my_path . '/css/share-this-form.css');
 
-  $current_options_array = sharethis_get_options_array();
-
+  $current_options = sharethis_get_all_settings();
   global $base_url;
 
   // Create the variables related to widget choice.
-  $widget_type = $current_options_array['widget'];
-  $widget_markup = "";
-  if ($widget_type == "st_multi") {
-    $widget_markup = "st_multi";
-  }
+  $widget_type = $current_options['widget'];
+
   // Create the variables related to button choice.
-  $button_choice = check_plain($current_options_array['buttons']);
-  // Create the variables related to services chosen.
-  $service_string = $current_options_array['services'];
-  $service_string_markup = "";
-  foreach (explode(",", $service_string) as $name => $string) {
-    $key = explode(":", backdrop_substr($string, 0, -1));
-    $key = $key[1];
-    $service_string_markup .= "\"" . $key . "\",";
-  }
-  $service_string_markup = backdrop_substr($service_string_markup, 0, -1);
+  $button_choice = $current_options['buttons'];
 
   // Create the variables for publisher keys.
-  $publisher = $current_options_array['publisherID'];
+  $publisher = $current_options['publisherID'];
 
   $form = array();
   $form['options'] = array(
@@ -51,8 +34,8 @@ function sharethis_configuration_form($form, &$form_state) {
     '#required' => TRUE,
     '#type' => 'radios',
     '#options' => array(
-      'stbc_large' => t('Large Chicklets'),
-      'stbc_' => t('Small Chicklets'),
+      'stbc_large' => t('Large Chicklets 32x32'),
+      'stbc_' => t('Small Chicklets (16x16)'),
       'stbc_button' => t('Classic Buttons'),
       'stbc_vcount' => t('Vertical Counters'),
       'stbc_hcount' => t('Horizontal Counters'),
@@ -60,149 +43,65 @@ function sharethis_configuration_form($form, &$form_state) {
     ),
     '#default_value' => $button_choice,
     '#title' => t("Choose a button style:"),
-    '#prefix' => '<div class="st_widgetContain"><div class="st_spriteCover"><img id="stb_sprite" class="st_buttonSelectSprite ' . $button_choice . '" src="' . $base_url . '/' . $my_path . '/img/preview_sprite.png"></img></div><div class="st_widgetPic"><img class="st_buttonSelectImage" src="' . $base_url . '/' . $my_path . '/img/preview_bg.png"></img></div>',
+    '#prefix' => '<div class="sharethis-widget-contain">
+                    <div class="sharethis-sprite-cover">
+                      <img id="stb-sprite" class="sharethis-button-select-sprite ' . $button_choice . '" src="' . $base_url . '/' . $my_path . '/img/preview_sprite.png">
+                    </div>
+                    <div class="sharethis-widget-pic">
+                      <img class="sharethis-button-select-image" src="' . $base_url . '/' . $my_path . '/img/preview_bg.png">
+                    </div>',
     '#suffix' => '</div>'
   );
+
+  // Set which services are available.
   $form['options']['sharethis_service_option'] = array(
-    '#description' => t("<b>Add</b> a service by selecting it on the right and clicking the <i>left arrow</i>.<br/><b>Remove</b> it by clicking the <i>right arrow</i>.<br/><b>Change the order</b> of services under \"Selected Services\" by using the <i>up</i> and <i>down</i> arrows."),
-    '#required' => TRUE,
-    '#type' => 'textfield',
-    '#prefix' => '<div>',
-    '#suffix' => '</div><div id="myPicker"></div><script type="text/javascript">stlib_picker.setupPicker(jQuery("#myPicker"), [' . $service_string_markup . '], backdrop_st.serviceCallback);</script>',
-    '#title' => t("Choose Your Services."),
-    '#default_value' => t($service_string),
-    '#maxlength' => 1024,
-  );
-  $form['options']['sharethis_option_extras'] = array(
-    '#title' => t('Additional unsupported services'),
-    '#description' => t('These services are not officially supported by ShareThis.'),
     '#type' => 'checkboxes',
-    '#options' => array(
-      'Google Plus One:plusone' => t('Google Plus One'),
-      'Facebook Like:fblike' => t('Facebook Like'),
-    ),
-    '#default_value' => $current_options_array['option_extras'],
+    '#title' => t('Services to include'),
+    '#options' => sharethis_get_services(),
+    '#default_value' => $current_options['services'],
   );
 
-  $form['options']['sharethis_callesi'] = array(
-    '#type' => 'hidden',
-    '#default_value' => $current_options_array['sharethis_callesi'],
-  );
-
-  $form['context'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Position'),
-    '#group' => 'additional_settings',
-    '#collapsible' => TRUE,
-  );
-
-  $form['context']['sharethis_location'] = array(
-    '#title' => t('Location of the ShareThis widget'),
-    '#type' => 'radios',
-    '#options' => array(
-      'content' => t('Display with <strong>fields</strong>'),
-      'links' => t('Display with <strong>links</strong>'),
-    ),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_location'),
-  );
-
-  // Add an information section for each location type, each dependent on the
-  // currently selected location.
-  foreach (array('links', 'content') as $location_type) {
-    $form['context'][$location_type]['#type'] = 'container';
-    $form['context'][$location_type]['#states']['visible'][':input[name="sharethis_location"]'] = array('value' => $location_type);
-  }
-
-  // Add help text for the 'content' location.
-  $form['context']['content']['help'] = array(
-    '#markup' => t('When the ShareThis widget is displayed with <strong>fields</strong>, you must place the ShareThis links in the <a href="@url">Manage Display</a> section of each content type.', array('@url' => url('admin/structure/types'))),
-    '#weight' => 10,
-    '#prefix' => '<em>',
-    '#suffix' => '</em>',
-  );
-
-  // Add checkboxes for each view mode of each bundle.
-  $entity_info = entity_get_info('node');
-  $modes = array();
-  foreach ($entity_info['view modes'] as $mode => $mode_info) {
-    $modes[$mode] = $mode_info['label'];
-  }
-  // Get a list of content types and view modes
-  $view_modes_selected = $current_options_array['view_modes'];
-  foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
-    $form['context']['links']['sharethis_' . $bundle . '_options'] = array(
-      '#title' => t('%label View Modes', array('%label' => $bundle_info['label'])),
-      '#description' => t('Select which view modes the ShareThis widget should appear on for %label nodes.', array('%label' => $bundle_info['label'])),
-      '#type' => 'checkboxes',
-      '#options' => $modes,
-      '#default_value' => $view_modes_selected[$bundle],
-    );
-  }
-
-  // Allow the user to choose which content types will have ShareThis added
-  // when using the 'Content' location.
+  // Set which content types will have ShareThis added.
   $content_types = array();
-  $enabled_content_types = $current_options_array['sharethis_node_types'];
+  $entity_info = entity_get_info('node');
   foreach($entity_info['bundles'] as $bundle => $bundle_info) {
     $content_types[$bundle] = t($bundle_info['label']);
   }
-  $form['context']['content']['sharethis_node_types'] = array(
-    '#title' => t('Content Types'),
-    '#description' => t('Select which types should display the ShareThis widget.'),
+  $form['options']['content']['sharethis_node_types'] = array(
+    '#title' => t('Content types that display the ShareThis widget'),
+    '#description' => t('The ShareThis links can be ordered with the <a href="@url">Manage Display</a> section for each content type.', array('@url' => url('admin/structure/types'))),
     '#type' => 'checkboxes',
     '#options' => $content_types,
-    '#default_value' => $enabled_content_types,
-  );
-  $form['context']['sharethis_comments'] = array(
-    '#title' => t('Comments'),
-    '#type' => 'checkbox',
-    '#default_value' => config_get('sharethis.settings', 'sharethis_comments'),
-    '#description' => t('Display ShareThis on comments.'),
-    '#access' => module_exists('comment'),
-  );
-  $form['context']['sharethis_weight'] = array(
-    '#title' => t('Weight'),
-    '#description' => t('The weight of the widget determines the location on the page where it will appear.'),
-    '#required' => FALSE,
-    '#type' => 'select',
-    '#options' => backdrop_map_assoc(array(-100, -50, -25, -10, 0, 10, 25, 50, 100)),
-    '#default_value' => config_get('sharethis.settings', 'sharethis_weight'),
-    '#states' => array(
-      // Hide the view mode settings until needed.
-      'visible' => array(
-        'input[name="sharethis_location"]' => array('value' => 'links'),
-      ),
-    ),
+    '#default_value' => $current_options['sharethis_node_types'],
   );
 
   $form['advanced'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Advanced'),
+    '#title' => t('Advanced Settings'),
     '#description' => t('The advanced settings can usually be ignored if you have no need for them.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['advanced']['sharethis_publisherID'] = array(
-    '#title' => t("Insert a publisher key (optional)."),
-    '#description' => t("When you install the module, we create a random publisher key.  You can register the key with ShareThis by contacting customer support.  Otherwise, you can go to <a href='http://www.sharethis.com/account'>ShareThis</a> and create an account.<br />Your official publisher key can be found under 'My Account'.<br />It allows you to get detailed analytics about sharing done on your site."),
-    '#type' => 'textfield',
-    '#default_value' => $publisher
-  );
   $form['advanced']['sharethis_late_load'] = array(
-    '#title' => t('Late Load'),
-    '#description' => t("You can change the order in which ShareThis widget loads on the user's browser. By default the ShareThis widget loader loads as soon as the browser encounters the JavaScript tag; typically in the tag of your page. ShareThis assets are generally loaded from a CDN closest to the user. However, if you wish to change the default setting so that the widget loads after your web-page has completed loading then you simply tick this option."),
+    '#title' => t('Load ShareThis after your web-page has completed loading.'),
     '#type' => 'checkbox',
     '#default_value' => config_get('sharethis.settings', 'sharethis_late_load'),
   );
+  $form['advanced']['sharethis_publisherID'] = array(
+    '#title' => t("Insert a publisher key (optional)."),
+    '#description' => t("A publisher key allows you to get detailed analytics about sharing done on your site. When you install the module, a random publisher key is created. You can register the random key with ShareThis by contacting customer support, or if you have an account with <a href='http://www.sharethis.com/account'>ShareThis</a>, your official publisher key can be found under 'My Account'."),
+    '#type' => 'textfield',
+    '#default_value' => $publisher
+  );
   $form['advanced']['sharethis_twitter_suffix'] = array(
-    '#title' => t("Twitter Suffix"),
-    '#description' => t("Optionally append a Twitter handle, or text, so that you get pinged when someone shares an article. Example: <em>via @YourNameHere</em>"),
+    '#title' => t("Twitter suffix"),
+    '#description' => t("Add some text to the end of a tweet. Example: <em>via @YourNameHere</em> or <em>#SomeHashtag</em>"),
     '#type' => 'textfield',
     '#default_value' => config_get('sharethis.settings', 'sharethis_twitter_suffix'),
   );
   $form['advanced']['sharethis_twitter_handle'] = array(
     '#title' => t('Twitter Handle'),
-    '#description' => t('Twitter handle to use when sharing.'),
+    '#description' => t('Twitter handle to use when sharing. Example: <em>@YourNameHere</em>'),
     '#type' => 'textfield',
     '#default_value' => config_get('sharethis.settings', 'sharethis_twitter_handle'),
   );
@@ -214,52 +113,33 @@ function sharethis_configuration_form($form, &$form_state) {
   );
   $form['advanced']['sharethis_option_onhover'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Display ShareThis widget on hover'),
-    '#description' => t('If disabled, the ShareThis widget will be displayed on click instead of hover.'),
+    '#title' => t('Display ShareThis widget on hover instead of on click.'),
     '#default_value' => config_get('sharethis.settings', 'sharethis_option_onhover'),
   );
   $form['advanced']['sharethis_option_neworzero'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Display count "0" instead of "New"'),
-    '#description' => t('Display a zero (0) instead of "New" in the count for content not yet shared.'),
+    '#title' => t('Display a zero (0) instead of "New" in the count for content not yet shared.'),
     '#default_value' => config_get('sharethis.settings', 'sharethis_option_neworzero'),
   );
   $form['advanced']['sharethis_option_shorten'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Display short URL'),
-    '#description' => t('Display either the full or the shortened URL.'),
+    '#title' => t('Display either the full or the shortened URL.'),
     '#default_value' => config_get('sharethis.settings', 'sharethis_option_shorten'),
   );
   $form['advanced']['sharethis_cns'] = array(
-    '#title' => t('<b>CopyNShare </b><sup>(<a href="http://support.sharethis.com/customer/portal/articles/517332-share-widget-faqs#copynshare" target="_blank">?</a>)</sup>'),
+    '#title' => t('<b>CopyNShare</b> Track shares when a user copies and pastes your website\'s URL or Content'),
+    '#description' => t('Please refer the <a href="http://support.sharethis.com/customer/portal/articles/517332-share-widget-faqs#copynshare" target="_blank">CopyNShare FAQ</a> for more details.'),
     '#type' => 'checkboxes',
     '#prefix' => '<div id="st_cns_settings">',
-    '#suffix' => '</div><div class="st_cns_container">
-        <p>CopyNShare is the new ShareThis widget feature that enables you to track the shares that occur when a user copies and pastes your website\'s <u>URL</u> or <u>Content</u>. <br/>
-        <u>Site URL</u> - ShareThis adds a special #hashtag at the end of your address bar URL to keep track of where your content is being shared on the web.<br/>
-        <u>Site Content</u> - It enables the pasting of "See more: YourURL#SThashtag" after user copies-and-pastes text. When a user copies text within your site, a "See more: yourURL.com#SThashtag" will appear after the pasted text. <br/>
-        Please refer the <a href="http://support.sharethis.com/customer/portal/articles/517332-share-widget-faqs#copynshare" target="_blank">CopyNShare FAQ</a> for more details.</p>
-      </div>',
+    '#suffix' => '</div>',
     '#options' => array(
-    'donotcopy' => t('Measure copy & shares of your site\'s Content'),
-    'hashaddress' => t('Measure copy & shares of your site\'s URLs'),
+      'donotcopy' => t('Track Content copy'),
+      'hashaddress' => t('Track URL copy'),
     ),
-    '#default_value' => $current_options_array['sharethis_cns'],
+    '#default_value' => $current_options['sharethis_cns'],
   );
-  $form['advanced']['sharethis_widget_option'] = array(
-  '#options' => array(
-    'st_multi' => t("Multi-Post Widget"),
-    'st_direct' => t("Direct-Post Widget")
-  ),
-  '#default_value' => $widget_type,
-  '#type' => 'radios',
-  '#required' => TRUE,
-  '#title' => t("Choose a widget type:"),
-  '#prefix' => '<div class="st_widgetContain"><div class="st_widgetPic ' . $widget_markup . '"><div class="st_widgetPicContain"><img src="' . $base_url . '/' . $my_path . '/img/widget.png"></img></div></div>',
-  '#suffix' => '</div>'
-  );
-
-  $form['#submit'][] = 'sharethis_configuration_form_submit';
+  $form['advanced']['sharethis_cns']['donotcopy']['#description'] = t('When a user copies text within your site, ShareThis adds a "See more: yourURL.com #SThashtag" after the pasted text.');
+  $form['advanced']['sharethis_cns']['hashaddress']['#description'] = t('ShareThis adds a special #SThashtag at the end of your address bar URL to keep track of where your content is being shared on the web.');
 
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit'] = array(
@@ -274,10 +154,7 @@ function sharethis_configuration_form($form, &$form_state) {
  * Form validation handler for sharethis_configuration_form().
  */
 function sharethis_configuration_form_validate($form, &$form_state) {
-  // Sanitize the publisher ID option.  Since it's a text field, remove anything that resembles code
-  $form_state['values']['sharethis_service_option'] = filter_xss($form_state['values']['sharethis_service_option'], array());
-
-  //Additional filters for the option extras input
+  // Additional filters for the option extras input
   $form_state['values']['sharethis_option_extras'] = (isset($form_state['values']['sharethis_option_extras'])) ? $form_state['values']['sharethis_option_extras'] : array();
 
   // Sanitize the publisher ID option.  Since it's a text field, remove anything that resembles code
@@ -302,13 +179,10 @@ function sharethis_configuration_form_validate($form, &$form_state) {
  * Form submission handler for sharethis_configuration_form().
  */
 function sharethis_configuration_form_submit($form, &$form_state) {
-  // If the location is changing to/from 'content', clear the Field Info cache.
-  $current_location = config_get('sharethis.settings', 'sharethis_location');
-  $new_location = $form_state['values']['sharethis_location'];
-  if (($current_location == 'content' || $new_location == 'content') && $current_location != $new_location) {
-    field_info_cache_clear();
-  }
+  // Remove items we aren't interested in.
+  form_state_values_clean($form_state['values']);
 
+  // Save the config.
   $config = config('sharethis.settings');
   foreach ($form_state['values'] as $key => $value) {
     $config->set($key, $value);
