@@ -26,8 +26,9 @@ function theme_sharethis_widget($variables) {
   $type = $variables['options']['type'];
   $all_services = sharethis_get_services();
   $services = isset($variables['options']['services'])? $variables['options']['services'] : array();
+  $title = check_plain($variables['title']);
   $attributes = array(
-    'st_title' => check_plain($variables['title']),
+    'st_title' => $title,
     'st_url' => $variables['url'],
   );
 
@@ -39,11 +40,11 @@ function theme_sharethis_widget($variables) {
       $attributes['class'] = array('st_' . $service . '_' . $type);
       $attributes['displayText'] = $all_services[$service];
       // Special handling for twitter.
-      switch ($key) {
+      switch ($service) {
         case 'twitter':
           $attributes['st_title'] = empty($variables['options']['twitter_suffix']) ? $title : $title . ' ' . check_plain($variables['options']['twitter_suffix']);
-          $attributes['st_via'] = $data_options['twitter_handle'];
-          $attributes['st_username'] = $data_options['twitter_recommends'];
+          $attributes['st_via'] = $variables['options']['twitter_handle'];
+          $attributes['st_username'] = $variables['options']['twitter_recommends'];
           break;
       }
       $markup .= '  <span' . backdrop_attributes($attributes). '></span>';

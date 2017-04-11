@@ -160,11 +160,6 @@ function sharethis_configuration_form_validate($form, &$form_state) {
   // Sanitize the publisher ID option.  Since it's a text field, remove anything that resembles code
   $form_state['values']['sharethis_publisherID'] = filter_xss($form_state['values']['sharethis_publisherID'], array());
 
-  if ($form_state['values']['sharethis_callesi'] == 1) {
-    unset($form_state['values']['sharethis_cns']);
-  }
-  unset($form_state['values']['sharethis_callesi']);
-
   // Ensure default value for twitter suffix
   $form_state['values']['sharethis_twitter_suffix'] = (isset($form_state['values']['sharethis_twitter_suffix'])) ? $form_state['values']['sharethis_twitter_suffix'] : '';
 
@@ -180,7 +175,7 @@ function sharethis_configuration_form_validate($form, &$form_state) {
  */
 function sharethis_configuration_form_submit($form, &$form_state) {
   // Remove items we aren't interested in.
-  form_state_values_clean($form_state['values']);
+  form_state_values_clean($form_state);
 
   // Save the config.
   $config = config('sharethis.settings');

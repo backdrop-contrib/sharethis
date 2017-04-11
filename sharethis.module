@@ -267,7 +267,7 @@ function sharethis_get_all_settings() {
 
   // Get proper button setting.
   $type = $config->get('sharethis_button_option');
-  if (substr($type) == '') {
+  if (substr($type, 5) == '') {
     $type = backdrop_substr($type, 5);
   }
 
