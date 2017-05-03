@@ -229,7 +229,7 @@ function sharethis_views_api() {
 function sharethis_get_services() {
   $services = array(
     'facebook' => 'Facebook',
-    'twitter' => 'Tweet',
+    'twitter' => 'Twitter',
     'linkedin' => 'LinkedIn',
     'pinterest' => 'Pinterest',
     'email' => 'Email',
