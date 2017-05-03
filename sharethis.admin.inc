@@ -64,7 +64,7 @@ function sharethis_configuration_form($form, &$form_state) {
   // Set which content types will have ShareThis added.
   $content_types = array();
   $entity_info = entity_get_info('node');
-  foreach($entity_info['bundles'] as $bundle => $bundle_info) {
+  foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
     $content_types[$bundle] = t($bundle_info['label']);
   }
   $form['options']['content']['sharethis_node_types'] = array(
@@ -72,7 +72,7 @@ function sharethis_configuration_form($form, &$form_state) {
     '#description' => t('The ShareThis links can be ordered with the <a href="@url">Manage Display</a> section for each content type.', array('@url' => url('admin/structure/types'))),
     '#type' => 'checkboxes',
     '#options' => $content_types,
-    '#default_value' => $current_options['sharethis_node_types'],
+    '#default_value' => !empty($current_options['sharethis_node_types'])? $current_options['sharethis_node_types']: array(),
   );
 
   $form['advanced'] = array(
