@@ -1,101 +1,55 @@
-SHARETHIS
----------------------
+ShareThis
+=========
 
-Sharethis places those "Share with..." icons/links on the content on your page.
+This module provides integration with the ShareThis social bookmarking utility.
+It places social media icons or count bubbles on specified pages of your site.
 
-Integration with the ShareThis social bookmarking utility on selected node types.
-
-CONTENTS OF THIS FILE
----------------------
-
- - Introduction
- - Tested
- - Known Issues
- - Special Thanks
- - Requirements
- - Installation
- - Coming From Drupal?
- - Usage
- - License
- - Credits
- - Maintainers
-
-The code for this project was based on the original share project for Drupal 5.x. The code for this project has been trimmed down to only work with the ShareThis system, and not require any additional modules to work properly.
-
-Features
-
-Customize your ShareThis code using the STAPI
-
-Select node types you wish to display ShareThis module on
-
-Choose to display in $teaser view or not
-
-Choose to display the ShareThis link in either the $link items, or in the $node->content itself
-
-Customize the weight of the ShareThis link if in $node placement
-
-Uses the ShareThis jQuery plugin so the ShareThis servers are queried after page rendering
-
-Place a ShareThis block anywhere on your site
-
-Views integration
-
-TESTED
------
-
-Simple working in Backdrop 1.1 -- placed in node/content area and shared via Twitter, placed in blocks/Layout area and shared via Gmail, altered look and feel in some config options and shared via Linkedin.
-
-KNOWN ISSUES
----------------------
-
-None critical for Backdrop yet.  Using a different way to append Sharethis than the theme_mymodule function in the original Drupal module until I/someone explains the theming system in Backdrop better than I understand it.
-
-There are many, many options to this module and not all of them have been tested for Backdrop CMS yet.
-
-REQUIREMENTS
+Installation
 ------------
 
-none
+- Install this module using the official Backdrop CMS instructions at
+  https://backdropcms.org/guide/modules
 
-INSTALLATION
-------------
+- Visit the configuration page under Administration > Configuration >
+  Web services > ShareThis (admin/config/services/sharethis). Customize the
+  display of your ShareThis widget, and select the content types you wish to
+  display ShareThis.
 
-Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
+- For the content types you selected, Visit the "Manage displays" interface
+  and adjust where you would like to see the ShareThis widget on the page.
 
+- Alternatively, you can place the a ShareThis block anywhere on your site.
 
-COMING FROM DRUPAL?
+Documentation
+-------------
+
+Additional documentation is located in the Wiki:
+https://github.com/backdrop-contrib/sharethis/wiki/Documentation
+
+Issues
+------
+
+Bugs and Feature requests should be reported in the Issue Queue:
+https://github.com/backdrop-contrib/sharethis/issues
+
+Current Maintainers
 -------------------
 
-Using a different way to append Sharethis to the page than the theme_mymodule function in the original Drupal module.
+- Jen Lampton (https://github.com/jenlampton)
+- Andy Martha (https://github.com/biolithic)
 
-PERMISSIONS
-------------
-
-@todo
-
-
-USAGE
------
-
-You need social media knowledge and probably social media accounts/API keys for this module to provide value.
-
-LICENSE
+Credits
 -------
 
-This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
+- Ported to Backdrop CMS by [Andy Martha](https://github.com/biolithic).
+- Originally written for Drupal by [Rob Loach](https://www.backdrop.org/u/robloach).
+- Maintained for Drupal by [Naveen Valecha](https://www.drupal.org/u/naveenvalecha).
+- Maintained for Drupal by [Purushotam Rai](https://www.drupal.org/u/purushotamrai).
+- Maintained for Drupal by [gao feng](https://www.drupal.org/u/gaofengzzz).
+- Maintained for Drupal by [Neetu Morwani](https://www.drupal.org/u/neetu-morwani).
 
-CREDITS
------------
+License
+-------
 
-This module is based on the ShareThis module for Drupal, originally written and maintained by a large number of contributors, including:
-
-- Rob Loach <https://www.backdrop.org/u/robloach>
-
-MAINTAINERS
------------
-
-- seeking
-
-Ported to Backdrop by:
-
- - biolithic <https://github.com/biolithic>
+This project is GPL v2 software. See the LICENSE.txt file in this directory for
+complete text.
