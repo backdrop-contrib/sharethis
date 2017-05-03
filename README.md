@@ -4,6 +4,9 @@ ShareThis
 This module provides integration with the ShareThis social bookmarking utility.
 It places social media icons or count bubbles on specified pages of your site.
 
+The code for this project was based on the original share project for Drupal 5.
+It has been trimmed down to only work with only the ShareThis system.
+
 Installation
 ------------
 
@@ -37,6 +40,7 @@ Current Maintainers
 
 - Jen Lampton (https://github.com/jenlampton)
 - Andy Martha (https://github.com/biolithic)
+- Seeking additional maintainers
 
 Credits
 -------
