@@ -2,9 +2,5 @@ type = module
 name = ShareThis
 description = Add the <a href="http://www.sharethis.com/">ShareThis</a> widget to pages on your site.
 backdrop = 1.x
-version = 1.x-1.2.1
-package = Social
+package = Social Media
 configure = admin/config/services/sharethis
-
-; Views handlers - @todo
-files[] = views/sharethis_handler_field_link.inc

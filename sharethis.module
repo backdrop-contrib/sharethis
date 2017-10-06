@@ -107,10 +107,10 @@ function sharethis_field_extra_fields() {
 
   $entity_info = entity_get_info('node');
   foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
-    if (isset($enabled_types[$bundle])) {
+    if (isset($enabled_types[$bundle]) && ($enabled_types[$bundle] == $bundle)) {
       $extra['node'][$bundle]['display'] = array(
         'sharethis' => array(
-          'label' => t('ShareThis'),
+          'label' => t('ShareThis Widget'),
           'description' => t('ShareThis widget'),
           'weight' => intval($config->get('sharethis_weight')),
         ),
