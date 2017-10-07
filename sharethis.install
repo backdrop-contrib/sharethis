@@ -5,34 +5,34 @@
  */
 
 /**
- * Implements hook_install().
- */
-function sharethis_install() {
-  config_set('sharethis.settings', 'sharethis_publisherID', sharethis_create_publisher_key());
-}
-
-/**
- * Helper function: Creates a publisher key for use with the ShareThis API.
- */
-function sharethis_create_publisher_key() {
-  $pubkey = "dr-";
-  $pubkey .= dechex(mt_rand( 0, 0xffff ));
-  $pubkey .= dechex(mt_rand( 0, 0xffff )) . "-";
-  $pubkey .= dechex(mt_rand( 0, 0xffff )) . "-";
-  $pubkey .= dechex(mt_rand( 0, 0xffff )) . "-";
-  $pubkey .= dechex(mt_rand( 0, 0xffff )) . "-";
-  $pubkey .= dechex(mt_rand( 0, 0xffff ));
-  $pubkey .= dechex(mt_rand( 0, 0xffff ));
-  $pubkey .= dechex(mt_rand( 0, 0xffff ));
-
-  return $pubkey;
-}
-
-/**
  * Implements hook_uninstall().
  */
 function sharethis_uninstall() {
   cache_clear_all('variables', 'cache');
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function sharethis_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break during installation.
+  $t = get_t();
+
+  // Report Backdrop version
+  if ($phase == 'runtime') {
+    $property = config_get('sharethis.settings', 'property');
+    if (!isset($property) || $property == '') {
+      $requirements['sharethis'] = array(
+        'title' => $t('ShareThis'),
+        'value' => $t('ShareThis has not been updated'),
+        'severity' => REQUIREMENT_WARNING,
+        'description' => $t('Check the <a href="@url">ShareThis module settings page</a> for instructions on how to update.', array('@url' => url('admin/config/services/sharethis'))),
+      );
+    }
+  }
+
+  return $requirements;
 }
 
 /**
@@ -93,3 +93,23 @@ function sharethis_update_1000() {
   update_variable_del('sharethis_option_shorten');
   update_variable_del('sharethis_publisherID');
 }
+
+/**
+ * Remove ShareThis config values that are not used anymore.
+ */
+function sharethis_update_1001() {
+  $config = config('sharethis.settings');
+  // Retrieve the only config values used after the update.
+  $types = $config->get('sharethis_node_types');
+  $comments = $config->get('sharethis_comments');
+  // Delete all other config.
+  $config->delete();
+  // Create a new config file with the same name.
+  $config = config('sharethis.settings');
+  // Put useful settings info back into config, with better names.
+  $config->set('node_types', $types);
+  $config->set('comments', $comments);
+  // Save.
+  $config->save();
+}
+

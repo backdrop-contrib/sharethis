@@ -4,22 +4,22 @@ ShareThis
 This module provides integration with the ShareThis social bookmarking utility.
 It places social media icons or count bubbles on specified pages of your site.
 
-The code for this project was based on the original share project for Drupal 5.
-It has been trimmed down to only work with only the ShareThis system.
-
 Installation
 ------------
 
 - Install this module using the official Backdrop CMS instructions at
   https://backdropcms.org/guide/modules
 
-- Visit the configuration page under Administration > Configuration >
-  Web services > ShareThis (admin/config/services/sharethis). Customize the
-  display of your ShareThis widget, and select the content types you wish to
-  display ShareThis.
+- Visit https://www.sharethis.com to select your services, buttons, and set any
+  other preferences. Note the Script tag generated.
 
-- For the content types you selected, Visit the "Manage displays" interface
-  and adjust where you would like to see the ShareThis widget on the page.
+- Visit the configuration page under Administration > Configuration >
+  Web services > ShareThis (admin/config/services/sharethis). Copy specific
+  perameters from the script tag, and enter those values into the form.
+
+- For any content types you chose to display ShareThis on, Visit the
+  "Manage displays" interface and adjust where you would like to see the
+  ShareThis widget on the page.
 
 - Alternatively, you can place the a ShareThis block anywhere on your site.
 

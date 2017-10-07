@@ -44,7 +44,7 @@ function sharethis_menu() {
     'title' => 'ShareThis',
     'description' => 'Choose the widget, button family, and services for using ShareThis to share content online.',
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('sharethis_configuration_form'),
+    'page arguments' => array('sharethis_settings_form'),
     'access arguments' => array('administer sharethis'),
     'file' => 'sharethis.admin.inc',
   );
@@ -80,18 +80,16 @@ function sharethis_node_view($node, $view_mode, $langcode) {
       return;
   }
 
-  // First get all of the options for the sharethis widget from the database:
-  $data_options = sharethis_get_all_settings();
-  $enabled_types = $data_options['sharethis_node_types'];
+  $config = config('sharethis.settings');
+  $enabled_types = $config->get('node_types');
 
   if (isset($enabled_types[$node->type]) && $enabled_types[$node->type] === $node->type) {
     $variables = array(
-      'url' => url('node/' . $node->nid, array('absolute' => TRUE)),
-      'titlte' => $node->title,
-      'options' => $data_options,
+      'property' => $config->get('property'),
+      'product' => $config->get('product'),
     );
-
     $node->content['sharethis'] = array(
+      '#type' => 'markup',
       '#markup' => theme('sharethis_widget', $variables),
     );
   }
@@ -103,15 +101,15 @@ function sharethis_node_view($node, $view_mode, $langcode) {
 function sharethis_field_extra_fields() {
   $extra = array();
   $config = config('sharethis.settings');
-  $enabled_types = $config->get('sharethis_node_types');
+  $enabled_types = $config->get('node_types');
 
   $entity_info = entity_get_info('node');
   foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
     if (isset($enabled_types[$bundle]) && ($enabled_types[$bundle] == $bundle)) {
       $extra['node'][$bundle]['display'] = array(
         'sharethis' => array(
-          'label' => t('ShareThis Widget'),
-          'description' => t('ShareThis widget'),
+          'label' => t('ShareThis'),
+          'description' => t('ShareThis social sharing buttons'),
           'weight' => intval($config->get('sharethis_weight')),
         ),
       );
@@ -152,38 +150,24 @@ function sharethis_block_view($delta='') {
  * @return string
  */
 function sharethis_block_contents() {
-  $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-  if ($path == config_get('system.core', 'site_frontpage')) {
-    $path = "<front>";
-  }
-
+  $config = config('sharethis.settings');
   $variables = array(
-    'url' => url($path, array('absolute' => TRUE)),
-    'title' => decode_entities(backdrop_get_title()),
-    'options' => sharethis_get_all_settings(),
+    'property' => $config->get('property'),
+    'product' => $config->get('product'),
   );
 
-  $output = theme('sharethis_widget', $variables);
-
-  return $output;
+  return theme('sharethis_widget', $variables);
 }
 
 /**
  * Implements hook_comment_view().
  */
 function sharethis_comment_view($comment, $view_mode, $langcode) {
-  if (config_get('sharethis.settings', 'sharethis_comments')) {
-    $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
-    $absolute_path = url($_GET['q'], array(
-      'absolute' => TRUE,
-      'fragment' => 'comment-' . $comment->cid,
-    ));
-
+  if (config_get('sharethis.settings', 'comments')) {
+    $config = config('sharethis.settings');
     $variables = array(
-      'url' => $absolute_path,
-      'title' => decode_entities(backdrop_get_title()),
-      'classes' => array('sharethis-comment'),
-      'options' => sharethis_get_all_settings(),
+      'property' => $config->get('property'),
+      'product' => $config->get('product'),
     );
 
     $comment->content['sharethis'] = array(
@@ -218,175 +202,4 @@ function sharethis_views_api() {
     'api' => 3,
     'path' => backdrop_get_path('module', 'sharethis') . '/views',
   );
-}
-
-/**
- * Helper function: Returns all services.
- *
- * @return (array)
- *   Array of Services - key and value are both provided by ShareThis.
- */
-function sharethis_get_services() {
-  $services = array(
-    'facebook' => 'Facebook',
-    'twitter' => 'Twitter',
-    'linkedin' => 'LinkedIn',
-    'pinterest' => 'Pinterest',
-    'email' => 'Email',
-    'sharethis' => 'ShareThis',
-  );
-
-  backdrop_alter('sharethis_services', $services);
-
-  return $services;
-}
-
-/**
- * Helper function: Returns all options that have been stored in config.
- *
- * @return (array)
- *   All settings stored in config, cleaned up and ready for use.
- */
-function sharethis_get_all_settings() {
-  $config = config('sharethis.settings');
-
-  // Get services.
-  $current_services = $config->get('sharethis_service_option');
-  if (isset($current_services) && !empty($current_services)) {
-    $services = $current_services;
-  }
-  else {
-    $services = sharethis_get_services();
-  }
-
-  // Get view mode settings.
-  $view_modes = array();
-  foreach (array_keys(node_type_get_types()) as $type) {
-    $view_modes[$type] = $config->get('sharethis_' . $type . '_options');
-  }
-
-  // Get proper button setting.
-  $type = $config->get('sharethis_button_option');
-  if (substr($type, 5) == '') {
-    $type = backdrop_substr($type, 5);
-  }
-
-  // Get CNS settings.
-  $donotcopy = FALSE;
-  $hashaddress = FALSE;
-  $sharethis_cns = $config->get('sharethis_cns');
-  if (is_null($sharethis_cns)) {
-    $sharethis_callesi = TRUE;
-  }
-  else {
-    $sharethis_callesi = FALSE;
-    if ($sharethis_cns['donotcopy'] == 'donotcopy') {
-      $donotcopy = TRUE;
-    }
-    elseif ($sharethis_cns['hashaddress'] == 'hashaddress')  {
-      $hashaddress = TRUE;
-    }
-  }
-
-  return array(
-    'services' => $services,
-    'view_modes' => $view_modes,
-    'type' => $type,
-    'buttons' => $config->get('sharethis_button_option'),
-    'publisherID' => $config->get('sharethis_publisherID'),
-    'option_extras' => $config->get('sharethis_option_extras'),
-    'widget' => $config->get('sharethis_widget_option'),
-    'onhover' => $config->get('sharethis_option_onhover'),
-    'neworzero' => $config->get('sharethis_option_neworzero'),
-    'twitter_suffix' => $config->get('sharethis_twitter_suffix'),
-    'twitter_handle' => $config->get('sharethis_twitter_handle'),
-    'twitter_recommends' => $config->get('sharethis_twitter_recommends'),
-    'late_load' => $config->get('sharethis_late_load'),
-    'sharethis_node_types' => $config->get('sharethis_node_types'),
-    'shorten' => $config->get('sharethis_option_shorten'),
-    'sharethis_cns' => $config->get('sharethis_cns'),
-    'sharethis_callesi' => $sharethis_callesi,
-    'donotcopy' => $donotcopy,
-    'hashaddress' => $hashaddress,
-  );
-}
-
-/**
- * Helper function: Include ShareThis js scripts only once per page.
- */
-function sharethis_include_js(&$build = array(), $data_options = array()) {
-  $has_run = &backdrop_static(__FUNCTION__, FALSE);
-  if (!$has_run) {
-    if (empty($data_options)) {
-      $data_options = sharethis_get_all_settings();
-    }
-
-    // Assemble an array of js options to set vars.
-    $st_js_options = array();
-    if ($data_options['late_load']) {
-      $st_js_options['__st_loadLate'] = TRUE;
-    }
-
-    // Collapse js vars into a string for addition onto page.
-    $jsvars = 'var switchTo5x=true;';
-    foreach ($st_js_options as $name => $value) {
-      $jsvars .= 'var ' . $name . '=' . backdrop_json_encode($value) . ';';
-    }
-
-    // Determine HTTP vs HTTPS addition of script.
-    $sharethis = 'http://w.sharethis.com/button/buttons.js';
-    if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') {
-      $sharethis = 'https://ws.sharethis.com/button/buttons.js';
-    }
-
-    // Attach all the JS needed for any number of widgets.
-    $build['#attached'] = array(
-      'js' => array(
-        $jsvars => array('type' => 'inline', 'scope' => 'header'),
-        $sharethis => array('type' => 'external', 'scope' => 'header'),
-        'stLight.options(' . sharethis_get_stlight_json($data_options) . ');' => array('type' => 'inline', 'scope' => 'header'),
-        //'stLight.options({publisher: "457a290a-9652-4a5f-ac83-f1f0590148d8", doNotHash: false, doNotCopy: false, hashAddressBar: false});' => array('type' => 'inline', 'scope' => 'header'),
-      ),
-    );
-
-    $has_run = TRUE;
-  }
-
-  return $has_run;
-}
-
-/**
- * Helper function: Creates options to be passed to stLight.options.
- *
- * @param (array) $data_options
- *   The complete set of configuration options.
- *
- * @return (array)
- *   JSON setings needed for ShareThis JavaScript.
- */
-function sharethis_get_stlight_json($data_options = array()) {
-  $params = array();
-  $params['publisher'] = $data_options['publisherID'];
-
-  if ($data_options['sharethis_callesi'] == 0) {
-    $params['doNotCopy'] = !$data_options['donotcopy'];
-    $params['hashAddressBar'] = $data_options['hashaddress'];
-    if (!($params['hashAddressBar']) && $params['doNotCopy']){
-      $params['doNotHash'] = TRUE;
-    }
-    else {
-      $params['doNotHash'] = FALSE;
-    }
-  }
-  if (isset($data_options['onhover']) && $data_options['onhover'] == FALSE) {
-    $params['onhover'] = FALSE;
-  }
-  if ($data_options['neworzero']) {
-    $params['newOrZero'] = 'zero';
-  }
-  if (!$data_options['shorten']) {
-    $params['shorten'] = 'false';
-  }
-
-  return backdrop_json_encode($params);
 }
