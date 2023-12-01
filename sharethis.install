@@ -5,10 +5,26 @@
  */
 
 /**
- * Implements hook_uninstall().
+ * Implements hook_install().
  */
-function sharethis_uninstall() {
-  cache_clear_all('variables', 'cache');
+function sharethis_install() {
+  config_set('sharethis.settings', 'sharethis_publisherID', sharethis_create_publisher_key());
+}
+
+/**
+ * Creates a publisher key for use with the ShareThis API.
+ */
+function sharethis_create_publisher_key() {
+  $pubkey = "dr-";
+  $pubkey .= dechex(mt_rand(0, 0xffff));
+  $pubkey .= dechex(mt_rand(0, 0xffff)) . "-";
+  $pubkey .= dechex(mt_rand(0, 0xffff)) . "-";
+  $pubkey .= dechex(mt_rand(0, 0xffff)) . "-";
+  $pubkey .= dechex(mt_rand(0, 0xffff)) . "-";
+  $pubkey .= dechex(mt_rand(0, 0xffff));
+  $pubkey .= dechex(mt_rand(0, 0xffff));
+  $pubkey .= dechex(mt_rand(0, 0xffff));
+  return $pubkey;
 }
 
 /**
@@ -113,3 +129,14 @@ function sharethis_update_1001() {
   $config->save();
 }
 
+/**
+ * Update the sharethis_location variable to an array.
+ *
+ */
+function sharethis_update_1002() {
+  $location_places = config_get('sharethis.settings', 'sharethis_location');
+  if (!is_array($location_places)) {
+    $location_places = ['content' => $location_places];
+    config_set('sharethis.settings', 'sharethis_location', $location_places);
+  }
+}

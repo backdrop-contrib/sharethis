@@ -9,21 +9,27 @@
  */
 class sharethis_handler_field_link extends views_handler_field_entity {
 
-  function render($values) {
+  /**
+   * Render values.
+   */
+  public function render($values) {
     if ($entity = $this->get_value($values)) {
-      return $this->render_sharethis_link($entity);
+      return $this->renderSharethisLink($entity);
     }
   }
 
-  function render_sharethis_link($entity) {
-    // Get all necessary settings.
-    $data_options = sharethis_get_all_settings();
+  /**
+   * Renders sharethis link.
+   */
+  public function renderSharethisLink($entity) {
+    $path = url('node/' . $entity->nid, ['absolute' => TRUE]);
+    sharethis_include_js();
 
-    return theme('sharethis_widget', array(
-      'options' => $data_options,
-      'services' => $data_options['services'],
-      'title' => $entity->title,
-      'url' => url('node/' . $entity->nid, array('absolute' => TRUE)),
-    ));
+    return theme('sharethis', [
+      'data_options' => sharethis_get_options_array(),
+      'm_title' => $entity->title,
+      'm_path' => $path,
+    ]);
   }
+
 }
